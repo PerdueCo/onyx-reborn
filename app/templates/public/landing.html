@@ -1,11 +1,18 @@
 {% extends "public_base.html" %}
 
-{% block title %}Onyx Reborn — BSSI Student Information System{% endblock %}
+{% block title %}Onyx Reborn — Student Information System{% endblock %}
 
 {% block content %}
 <div class="landing-hero">
-  <h1 class="landing-title">Onyx Reborn</h1>
-  <p class="landing-subtitle">BSSI Student Information System — Modernized</p>
-  <a href="/login" class="btn btn-primary">Sign In</a>
+  <h1 class="landing-title">A new chapter for student success</h1>
+  <p class="landing-lead">Student and employment management, modernized.</p>
+  <p class="landing-sub">Supporting staff with clearer records and employment history.</p>
+  <a href="/login" class="landing-btn">
+    Sign in
+    <svg style="width:18px;height:18px" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+    </svg>
+  </a>
+  <p class="landing-cta-note">Use your organization account to continue.</p>
 </div>
 {% endblock %}

@@ -134,3 +134,40 @@ Copy the template for each session (newest at the bottom).
 - **Tests:** `pytest -q` → **9 passed**, 0 failed (2 smoke + 7 schema).
 - **Commit IDs:** (assigned after push — see next entry)
 - **Next item:** Day 1 item 3 — `base.html` sidebar layout + `onyx.css` matching mockups.
+
+---
+
+### 2026-10-10 — Day 1 (item 3)
+- **Items finished:**
+  1. `app/templates/base.html` — full authenticated layout: fixed navy sidebar (220px),
+     inline SVG icons for Overview/Students/Employment/Reports/Administration, active-page
+     highlighting (left blue border), sticky top bar with search input + user avatar/name
+     area, DEV MODE amber banner when `current_user` is None.
+  2. `app/static/css/onyx.css` — full stylesheet rebuilt from mockup tokens: navy `#1b2a4a`,
+     blue `#3d6fe8`, page bg `#edf0f7`, white cards (`border-radius:10px`), `active` nav item
+     with blue left-border, topbar, search input, user avatar, DEV banner, table styles,
+     badge styles (active/inactive/pending/approved/rejected/current), button styles
+     (primary/secondary/danger/sm), form styles with focus ring, pagination, public-page
+     layout (dark topbar + landing hero), auth card, utility classes.
+  3. `app/templates/public_base.html` — updated to navy-topbar + light-bg layout matching
+     the welcome screen mockup (wordmark top-left, Sign In button top-right).
+  4. `app/templates/public/landing.html` — updated with "A new chapter for student success"
+     heading, lead text, arrow CTA button matching the mockup.
+  5. `app/templates/dashboard/index.html` — placeholder Overview page using `base.html`:
+     4 KPI cards (values `—` until Day 5), Quick links row, System status card.
+  6. `app/routers/dashboard.py` — `GET /dashboard` route; `current_user=None` placeholder
+     until Day 3 auth is built.
+  7. `app/main.py` — dashboard router registered.
+  8. `tests/test_smoke.py` — added `test_dashboard_ok` asserting 200, "Overview" in body,
+     "sidebar" class present, "DEV MODE" banner present.
+- **Bob modes used:** Agent mode throughout. Read all 4 mockup PNG files before coding.
+- **Key prompts:**
+  - "Go for item 3: sidebar layout … navy left sidebar … Use .venv\\Scripts\\ commands only."
+- **What Bob did well:** Extracted exact design tokens from mockup images (navy, blue, page
+  bg, card radius, active nav style) before writing a single line of CSS.
+- **Where I corrected it:** No corrections needed this session.
+- **Problems + fixes:** None — 10 passed on first run.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **10 passed**, 0 failed.
+- **Next item:** Day 1 Students — list/search, add form, edit form; STU number generated and
+  immutable; required-field validation; acceptance checks 1 and 4 in router tests.

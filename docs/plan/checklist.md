@@ -17,7 +17,7 @@ Clarence how to see it. Mode hint in brackets: **[Ask]** understand · **[Plan]*
 - [x] [Plan→Code] Project skeleton per spec §2; `requirements.txt`; `uvicorn app.main:app --reload` shows "Onyx Reborn" at `/`
 - [x] [Code] `models.py` per DATABASE_SCHEMA.md + spec §3 additions; Alembic initial migration; SQLite FK pragma; seed roles + permissions (D-23)
 - [x] [Code] Schema tests for acceptance checks 1, 2, 4 (STU number unique, 2 simultaneous jobs, bad dates/negative hours/orphans rejected) — 9 tests pass
-- [ ] [Code] `base.html` sidebar layout + `onyx.css` matching mockups
+- [x] [Code] `base.html` sidebar layout + `onyx.css` matching mockups; `/dashboard` placeholder; 10 tests pass
 - [x] [Code] pytest set up with in-memory SQLite fixture (StaticPool, FK pragma ON); smoke tests pass
 - [ ] [Code] Students list + search (name or STU number), add form, edit form; STU number generated and immutable; required-field validation; tests (acceptance checks 1 and 4)
 

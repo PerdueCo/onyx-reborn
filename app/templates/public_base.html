@@ -5,10 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Onyx Reborn{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/onyx.css">
+  {% block head_extra %}{% endblock %}
 </head>
-<body class="public-page">
-  <div class="public-container">
+<body class="public-body">
+
+  <!-- Top bar — dark navy, wordmark left, Sign In right -->
+  <header class="public-topbar">
+    <span class="wordmark"><strong>Onyx</strong> Reborn</span>
+    {% block topbar_right %}
+      <a href="/login" class="btn btn-primary btn-sm">Sign in</a>
+    {% endblock %}
+  </header>
+
+  <div class="public-content">
     {% block content %}{% endblock %}
   </div>
+
+  <footer class="public-footer">
+    <strong>Onyx</strong> Reborn — BSSI Modernization
+  </footer>
+
 </body>
 </html>
