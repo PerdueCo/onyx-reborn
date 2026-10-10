@@ -58,6 +58,6 @@ Copy the template for each session (newest at the bottom).
 - **Decisions changed:** D-16 (OPEN→CONFIRMED solo), D-17/D-20/D-23/D-26 (PROPOSED→CONFIRMED);
   all other PROPOSED rows also confirmed.
 - **Tests:** N/A — no application code yet.
-- **Commit IDs:** `b8f93aa` (AGENTS.md + prior docs) — Day 0 close commit TBD (step 7).
+- **Commit IDs:** `b8f93aa` (AGENTS.md + prior docs), `09d9a7a` (Day 0 complete: decisions confirmed, duplicates removed).
 - **Next item:** Day 1 — project skeleton: `requirements.txt`, `app/main.py`, uvicorn serves
   "Onyx Reborn" at `/`.
