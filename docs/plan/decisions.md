@@ -1,0 +1,43 @@
+# Decisions log
+
+Answers to the 10 questions in `docs/analysis/legacy-inspection-report.md` §7, plus new ones.
+**Status:** `PROPOSED` = Claude's default, Clarence to confirm · `CONFIRMED` = Clarence agreed.
+
+| # | Question | Decision | Status |
+|---|---|---|---|
+| D-01 (Q1) | Production file paths A:\ vs E:\ | Irrelevant to the new app; importer reads the reporting copies from the repo test pack. Note in README that 1998 paths were hard-coded. | PROPOSED |
+| D-02 (Q2) | Instructor / Student Maintenance | Never finished in 1998. Finished now as the **Administration** area + Staff role. Great pitch line. | PROPOSED |
+| D-03 (Q3) | Company code collisions | Replace with real employer IDs; keep old code as `employers.legacy_code` only. | PROPOSED |
+| D-04 (Q4) | YesNo encoding 0/1 vs Y/N | Store as boolean `seeking_employment`; importer accepts both. | PROPOSED |
+| D-05 (Q5) | Student `Date` field (test data has e.g. `01/15/98`) | Import as `enrolled_date` (add column); blank → NULL. | PROPOSED |
+| D-06 (Q6) | Employer state never saved (bug) | Fixed — state is saved. List under "bugs fixed" in submission. | PROPOSED |
+| D-07 (Q7) | Hours/week 2 vs 3 digits | Integer 1–80. | PROPOSED |
+| D-08 (Q8) | One employer per student? | Many jobs per student (mockup 13 shows 2), with start/end dates for history. | PROPOSED |
+| D-09 (Q9) | Report output | On-screen + CSV + browser print; PDF is stretch. | PROPOSED |
+| D-10 (Q10) | Name | "Onyx Reborn — BSSI Modernization". Keep ONYX. | PROPOSED |
+| D-11 | Cloud DB | Start: SQLite re-seeded in container (demo). Upgrade to IBM Cloud PostgreSQL if time on Day 8. | PROPOSED |
+| D-12 | SSN | Never collected, stored, or displayed. Importer discards it. Student ID = `STU-####`. | PROPOSED |
+| D-13 | MFA method | TOTP authenticator app (pyotp) + 8 recovery codes. No SMS (cost, SIM-swap risk). | PROPOSED |
+| D-14 | Year of original app | 1998 (VB4; dates in forms are April–May 1998). | PROPOSED |
+| D-15 | Student self-service editing | Read-only for MVP; request/review workflow is stretch. | PROPOSED |
+| D-16 | Team | Solo or team? List members for the deck. | OPEN |
+
+## Reconciliation with `docs/design/DATABASE_SCHEMA.md` (added Oct 9)
+The schema doc wins wherever it disagrees with the plan. These decisions close the gaps
+between the two.
+
+| # | Question | Proposal | Status |
+|---|---|---|---|
+| D-17 | Identity provider (schema §6 leaves it open) | **Local provider** for the hackathon: `user_account.provider='local'`, credentials + TOTP in a separate `local_credential` table so a real provider can replace it later. Free, works offline, demoable. Real provider = roadmap slide. *Replaces D-13's "no table" tension: there's no MFA-code table, only an encrypted secret.* | PROPOSED: needs Clarence |
+| D-18 | MFA scope | Required for Administrator and Staff. Student MFA optional (enroll on first login if the portal is on). | PROPOSED |
+| D-19 | Student number format | `STU-####`, generated on create, immutable (mockups use STU-0104). | PROPOSED |
+| D-20 | Legacy fields to keep | Keep as optional: two phones, address, high school, grad date, seeking flag, desired job, enrolled date. **Drop birth month/day** (not needed, it's personal info). | PROPOSED: needs Clarence |
+| D-21 | Imported jobs have no start date, but the schema requires one | Use the student's legacy `enrolled_date` (e.g. 01/15/98) as start_date and note "start date inferred from 1998 entry date" in the import audit event. | PROPOSED |
+| D-22 | Imported job_type unknown | Allow `unknown` in addition to part_time/full_time/other; staff can fix it later. | PROPOSED |
+| D-23 | Roles & approver | Administrator: all permissions. Staff: students.read/manage, employment.manage, reports.read. A separate **Reviewer** role holds `student_updates.approve` (assign to staff who should approve). Student: self_service.use. | PROPOSED: needs Clarence |
+| D-24 | Portal checkpoint | Schema says decide at the **Oct 11** checkpoint. Build is staff-first either way; the portal sits behind `PORTAL_ENABLED`. Read-only "My information/My employment" is cheap, so try it after staff core; the request/review queue only if Day 6 is finished by Thu Oct 15. | PROPOSED |
+| D-25 | Migrations | Alembic from day 1 (schema §4 asks for explicit migrations). | PROPOSED |
+| D-26 | `UI_FLOW.md` | Referenced by the schema doc but not in the repo. Either add it or treat `prd.md` as the UI flow. | OPEN |
+
+Amends: **D-13** → see D-17/D-18. **D-15** → see D-24. **D-08** confirmed by the schema
+(multiple simultaneous jobs; same employer may repeat).
