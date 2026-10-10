@@ -12,7 +12,7 @@ Jason Via, Costanza Baez) at Gwinnett Technical Institute, 1998. It tracked stud
 Business Science programs and where they worked. It no longer runs on modern Windows (16-bit
 VB4), it stored data in fixed-width files on `A:\`, and it identified students by Social
 Security Number. The full forensic read of the old code is in
-`docs/analysis/legacy-inspection-report.md` — done with Bob.
+`docs/analysis/legacy-inspection-report.md`.
 
 ## Hackathon fit
 - **Track:** Theme 2 — Experienced Developers, "Modernize What Matters."

@@ -7,11 +7,11 @@ Clarence how to see it. Mode hint in brackets: **[Ask]** understand · **[Plan]*
 **Cut line:** if Day 6 isn't done by end of Thu Oct 15, skip all ⭐ stretch items.
 
 ## Day 0 — Fri Oct 9 / Sat Oct 10 morning: Get organized
-- [ ] Commit what exists: `docs/`, `.gitignore`, these plan files, `AGENTS.md`, and `docs/design/DATABASE_SCHEMA.md`. Push.
-- [ ] [Ask] Run the reconciliation prompt from `DATABASE_SCHEMA.md` §10, then confirm D-17 to D-26 in `decisions.md`
-- [ ] [Ask] Bob reads `AGENTS.md` + plan docs and asks Clarence any gap questions → update `decisions.md` (mark CONFIRMED)
-- [ ] Delete duplicate mockups (`-1`, `-3` copies are identical files)
-- [ ] Create `docs/bob-log.md` and log this session
+- [x] Commit what exists: `docs/`, `.gitignore`, these plan files, `AGENTS.md`, and `docs/design/DATABASE_SCHEMA.md`. Push. (commit b8f93aa)
+- [x] [Ask] Run the reconciliation prompt from `DATABASE_SCHEMA.md` §10, then confirm D-17 to D-26 in `decisions.md`
+- [x] [Ask] Bob reads `AGENTS.md` + plan docs and asks Clarence any gap questions → update `decisions.md` (mark CONFIRMED)
+- [x] Delete duplicate mockups (`-1`, `-3` copies are identical files)
+- [x] Create `docs/bob-log.md` and log this session
 
 ## Day 1 — Sat Oct 10: Skeleton + database
 - [ ] [Plan→Code] Project skeleton per spec §2; `requirements.txt`; `uvicorn app.main:app --reload` shows "Onyx Reborn" at `/`
