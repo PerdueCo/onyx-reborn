@@ -85,3 +85,52 @@ Copy the template for each session (newest at the bottom).
 - **Decisions changed:** None (confirmed Clarence's 5 machine rules were new constraints, not decision changes).
 - **Tests:** `pytest -q` → 2 passed, 0 failed (tests/test_smoke.py — GET / and GET /about both 200).
 - **Next item:** Day 1 item 2 — `models.py` per DATABASE_SCHEMA.md + Alembic initial migration + seed roles/permissions (D-23).
+
+---
+
+### 2026-10-10 — Day 1 (item 2)
+- **Items finished:**
+  1. `app/models.py` filled with all 12 ORM classes: `UserAccount`, `LocalCredential`,
+     `Role`, `UserRole`, `Permission`, `RolePermission`, `Program`, `Student`, `Employer`,
+     `Employment`, `ChangeRequest`, `AuditEvent`. All columns, CHECK constraints, FK
+     constraints, and `version`/`created_at`/`updated_at` per DATABASE_SCHEMA.md §4-5 +
+     spec §3 legacy additions (D-17–D-22). No birth data (D-20). `job_type` includes
+     `unknown` (D-22). State saved on Employer (D-06 bug fix).
+  2. `migrations/env.py` updated: `render_as_batch=True` in both online and offline modes
+     for future SQLite ALTER TABLE support.
+  3. Alembic migration `42071248d917_initial.py` generated via `alembic revision
+     --autogenerate -m "initial"`. All 12 tables detected. `alembic upgrade head` applied
+     cleanly.
+  4. `tests/conftest.py` extended with `db_session` fixture: in-memory SQLite, StaticPool
+     (every connection shares one DB), `PRAGMA foreign_keys=ON`, `Base.metadata.create_all`,
+     rollback after each test.
+  5. `tests/test_schema.py` created — 7 tests covering acceptance checks 1, 2, 4:
+     - Check 1a: `student_number` UNIQUE constraint enforced
+     - Check 1b: `first_name=None` NOT NULL rejected
+     - Check 2a: one student holds two simultaneous jobs at different employers
+     - Check 2b: same employer, two rows across different date ranges
+     - Check 4a: `hours_per_week=-1` CHECK rejected
+     - Check 4b: `end_date < start_date` CHECK rejected
+     - Check 4c: orphan `Employment` (non-existent student_id) FK rejected
+  6. `scripts/seed_roles.py` created — idempotent seeder for 4 roles + 7 permissions +
+     13 role-permission assignments per D-23. Verified safe to run twice.
+  7. Fixed `tests/conftest.py` name-shadowing bug: `import app.models` collided with
+     `from app.main import app`; resolved with `import app.models as _models` and
+     `app as fastapi_app` aliases.
+- **Bob modes used:** Plan mode (plan file), Agent mode (all code).
+- **Key prompts:**
+  - "Plan item 2 only now: list files, tests, and how I check it."
+  - "OK, approved with these changes: 1. StaticPool + FK pragma … 6. add acceptance check 2 …"
+- **What Bob did well:** Generated all 12 ORM classes correctly in one pass; caught the
+  `import app` shadowing bug on first pytest run.
+- **Where I corrected it:** Clarence added 6 approval conditions (StaticPool, venv paths,
+  6th schema test, version columns, render_as_batch, SQLite viewer command).
+- **Problems + fixes:**
+  - `import app.models` in conftest shadowed `from app.main import app` — the name `app`
+    resolved to the package, not the FastAPI instance. Fixed with explicit aliases.
+  - `datetime.datetime.utcnow()` deprecation warning — cosmetic, not an error; left as-is
+    (changing to `datetime.datetime.now(datetime.UTC)` is a separate cleanup).
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **9 passed**, 0 failed (2 smoke + 7 schema).
+- **Commit IDs:** (assigned after push — see next entry)
+- **Next item:** Day 1 item 3 — `base.html` sidebar layout + `onyx.css` matching mockups.
