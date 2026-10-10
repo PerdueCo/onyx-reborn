@@ -14,7 +14,7 @@ Clarence how to see it. Mode hint in brackets: **[Ask]** understand · **[Plan]*
 - [x] Create `docs/bob-log.md` and log this session
 
 ## Day 1 — Sat Oct 10: Skeleton + database
-- [ ] [Plan→Code] Project skeleton per spec §2; `requirements.txt`; `uvicorn app.main:app --reload` shows "Onyx Reborn" at `/`
+- [x] [Plan→Code] Project skeleton per spec §2; `requirements.txt`; `uvicorn app.main:app --reload` shows "Onyx Reborn" at `/`
 - [ ] [Code] `models.py` per DATABASE_SCHEMA.md + spec §3 additions; Alembic initial migration; SQLite FK pragma; seed roles + permissions (D-23)
 - [ ] [Code] Schema tests for acceptance checks 1–4 (STU number immutable, 2 simultaneous jobs, end job keeps history, bad dates/negative hours/orphans rejected)
 - [ ] [Code] `base.html` sidebar layout + `onyx.css` matching mockups

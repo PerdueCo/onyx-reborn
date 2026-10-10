@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Onyx Reborn{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/onyx.css">
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <span class="wordmark">Onyx Reborn</span>
+      </div>
+      <ul class="nav-links">
+        {% block nav_links %}{% endblock %}
+      </ul>
+    </nav>
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

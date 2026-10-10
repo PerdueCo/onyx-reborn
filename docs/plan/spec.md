@@ -18,7 +18,6 @@ app/
   config.py          # settings from env (.env)
   db.py              # engine, SessionLocal, Base
   models.py          # all tables (DATABASE_SCHEMA.md + §3)
-migrations/          # Alembic
   security.py        # hash/verify pw, TOTP, login_required, require_permission(...), owns_student(...)
   audit.py           # log_event(db, user, action, entity, detail)
   routers/
@@ -35,6 +34,7 @@ migrations/          # Alembic
     legacy_import.py # fixed-width parser + loader (§5)
   templates/         # base.html (sidebar layout), public_base.html, one folder per router
   static/css/onyx.css, static/img/
+migrations/          # Alembic
 scripts/seed.py      # demo users + runs legacy import
 tests/
 Dockerfile, requirements.txt, .env.example, README.md

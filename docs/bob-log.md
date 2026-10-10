@@ -61,3 +61,27 @@ Copy the template for each session (newest at the bottom).
 - **Commit IDs:** `b8f93aa` (AGENTS.md + prior docs), `09d9a7a` (Day 0 complete: decisions confirmed, duplicates removed).
 - **Next item:** Day 1 — project skeleton: `requirements.txt`, `app/main.py`, uvicorn serves
   "Onyx Reborn" at `/`.
+
+---
+
+### 2026-10-10 — Day 1 (item 1)
+- **Items finished:**
+  1. Spec §2 typo fixed: `security.py` and `audit.py` moved to `app/` (not `migrations/`); `migrations/` correctly placed at top level.
+  2. `onyx.db` (+ shm/wal) added to `.gitignore`.
+  3. `.venv` created with `py -3.12`; all packages installed with exact versions pinned in `requirements.txt` (no passlib — using `bcrypt` directly per Clarence's rule).
+  4. Full project skeleton created: `app/main.py`, `app/config.py`, `app/db.py`, `app/security.py`, `app/audit.py`, `app/models.py` (stub), `app/routers/` (public, auth, dashboard, students, employment, me, reports, admin), `app/services/` (kpis, legacy_import), `app/templates/` (base.html, public_base.html, public/landing.html, public/about.html), `app/static/css/onyx.css`, `migrations/` (Alembic init + Base wired), `.env.example`, `Dockerfile`, `scripts/seed.py`, `tests/conftest.py`, `tests/test_smoke.py`.
+  5. Alembic initialized; `migrations/env.py` wired to `app.db.Base` and reads `DATABASE_URL` from settings.
+  6. `pytest -q` → **2 passed**, 1 cosmetic StarletteDep warning (from starlette's own `testclient.py` import; cannot suppress from our side without replacing starlette).
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Start of session … Build only Day 1 item 1. Run pytest -q. Check the item off. Then stop."
+  - Clarence's rules: py -3.12 only for venv creation; no passlib; bcrypt directly; config.py safe defaults; pin exact versions; onyx.db in .gitignore.
+- **What Bob did well:** Created full skeleton in one session; caught Jinja2 API change (new Starlette requires `TemplateResponse(request, name)` not `TemplateResponse(name, {"request": ...})`).
+- **Where I corrected it:** Clarence added 5 machine-specific rules before work began.
+- **Problems + fixes:**
+  - Starlette 1.7 / FastAPI 0.143 changed `TemplateResponse` signature — fixed immediately on first pytest run.
+  - `httpx2` does not exist as an installable package; starlette deprecation warning is cosmetic; kept `httpx==0.28.1`.
+  - Background commands in PowerShell didn't capture stdout to a file — worked around with `execute_command` direct calls.
+- **Decisions changed:** None (confirmed Clarence's 5 machine rules were new constraints, not decision changes).
+- **Tests:** `pytest -q` → 2 passed, 0 failed (tests/test_smoke.py — GET / and GET /about both 200).
+- **Next item:** Day 1 item 2 — `models.py` per DATABASE_SCHEMA.md + Alembic initial migration + seed roles/permissions (D-23).
