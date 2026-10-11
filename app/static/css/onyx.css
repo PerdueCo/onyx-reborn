@@ -779,24 +779,60 @@ body.public-body {
   padding: 40px 24px;
 }
 
-/* Landing hero area */
+/* ------------------------------------------------------------------ */
+/*  Landing page — old single-column hero (kept for /about, etc.)      */
+/* ------------------------------------------------------------------ */
+
 .landing-hero {
   max-width: 520px;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Landing page — two-column grid layout                              */
+/* ------------------------------------------------------------------ */
+
+.landing-grid {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-left {
+  flex: 0 0 auto;
+  width: 440px;
+  max-width: 100%;
+}
+
+.landing-right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Landing typography                                                  */
+/* ------------------------------------------------------------------ */
+
 .landing-title {
-  font-size: 42px;
+  font-size: clamp(44px, 6vw, 88px);
   font-weight: 800;
   color: var(--navy);
-  line-height: 1.15;
-  margin-bottom: 16px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
 }
 
 .landing-lead {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   color: var(--blue);
   margin-bottom: 12px;
+  line-height: 1.35;
 }
 
 .landing-sub {
@@ -805,6 +841,10 @@ body.public-body {
   margin-bottom: 32px;
 }
 
+/* desktop line shown, mobile line hidden by default */
+.landing-sub-desktop { display: block; }
+.landing-sub-mobile  { display: none;  }
+
 .landing-cta-note {
   font-size: 13px;
   color: var(--muted);
@@ -812,16 +852,17 @@ body.public-body {
 }
 
 .landing-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
+  display: block;
+  width: 390px;
+  max-width: 100%;
+  padding: 16px 32px;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   background: var(--blue);
   color: #ffffff;
   text-decoration: none;
+  text-align: center;
   transition: background 0.15s;
 }
 
@@ -829,6 +870,182 @@ body.public-body {
   background: var(--blue-hover);
   color: #ffffff;
   text-decoration: none;
+}
+
+.landing-btn:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+a:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-btn { transition: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Landing illustration                                                */
+/* ------------------------------------------------------------------ */
+
+.landing-illustration {
+  position: relative;
+  width: 540px;
+  height: 480px;
+  flex-shrink: 0;
+}
+
+/* scale illustration down in the 901–1200 px range */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .landing-illustration {
+    transform: scale(0.82);
+    transform-origin: center center;
+  }
+}
+
+/* soft background circles */
+.illus-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: #dbe8ff;
+}
+.illus-circle-1 {
+  width: 320px; height: 320px;
+  top: 50%; left: 45%;
+  transform: translate(-50%, -50%);
+  opacity: 0.55;
+}
+.illus-circle-2 {
+  width: 220px; height: 220px;
+  top: 38%; left: 62%;
+  transform: translate(-50%, -50%);
+  opacity: 0.40;
+  background: #c5d8ff;
+}
+
+/* cards */
+.illus-card {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.illus-card-tl { width: 180px; top:  16px; left:  24px; }   /* grad cap   */
+.illus-card-tr { width: 180px; top:  16px; right:   0; }    /* briefcase  */
+.illus-card-cm { width: 220px; top: 160px; left:  50%; transform: translateX(-50%); z-index: 2; } /* person */
+.illus-card-bl { width: 180px; bottom: 16px; left: 24px; }  /* document   */
+.illus-card-br { width: 180px; bottom: 16px; right:  0; }   /* people     */
+
+.illus-icon {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  color: var(--navy);
+}
+.illus-card-cm .illus-icon { width: 52px; height: 52px; }
+
+.illus-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding-top: 4px;
+}
+.illus-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: #dde2ef;
+}
+.illus-bar-short { width: 55%; }
+.illus-bar-long  { width: 85%; }
+
+/* SVG connector overlay */
+.illus-connector {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Public footer                                                       */
+/* ------------------------------------------------------------------ */
+
+.public-footer {
+  padding: 18px 32px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+
+.footer-short { display: none; }
+.footer-full  { display: inline; }
+
+/* ------------------------------------------------------------------ */
+/*  Mobile overrides (≤ 900 px)                                        */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .topbar-signin { display: none; }
+
+  .landing-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .landing-left {
+    width: 100%;
+    text-align: center;
+  }
+
+  .landing-sub-desktop { display: none; }
+  .landing-sub-mobile  { display: block; }
+
+  .landing-btn {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .public-footer {
+    text-align: center;
+  }
+
+  .footer-full  { display: none; }
+  .footer-short { display: inline; }
+
+  /* mobile illustration: smaller, only shows person + briefcase cards */
+  .landing-illustration {
+    width: 320px;
+    height: 280px;
+    transform: none;
+  }
+
+  .illus-card-tl,
+  .illus-card-bl,
+  .illus-card-br { display: none; }
+
+  .illus-card-cm {
+    width: 160px;
+    top: 40px;
+    left: 20px;
+    transform: none;
+  }
+  .illus-card-tr {
+    width: 140px;
+    top: 110px;
+    right: 20px;
+  }
+
+  .illus-circle-1 { width: 200px; height: 200px; top: 48%; left: 40%; }
+  .illus-circle-2 { width: 140px; height: 140px; top: 35%; left: 65%; }
 }
 
 /* Auth card (login / MFA) */

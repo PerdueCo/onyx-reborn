@@ -9,11 +9,11 @@
 </head>
 <body class="public-body">
 
-  <!-- Top bar — dark navy, wordmark left, Sign In right -->
+  <!-- Top bar — dark navy, wordmark left, Sign In right (hidden on mobile via .topbar-signin) -->
   <header class="public-topbar">
     <span class="wordmark"><strong>Onyx</strong> Reborn</span>
     {% block topbar_right %}
-      <a href="/login" class="btn btn-primary btn-sm">Sign in</a>
+      <a href="/login" class="btn btn-primary btn-sm topbar-signin">Sign in</a>
     {% endblock %}
   </header>
 
@@ -22,7 +22,8 @@
   </div>
 
   <footer class="public-footer">
-    <strong>Onyx</strong> Reborn — BSSI Modernization
+    <span class="footer-full"><strong>Onyx</strong> Reborn — BSSI Modernization</span>
+    <span class="footer-short">BSSI Modernization</span>
   </footer>
 
 </body>

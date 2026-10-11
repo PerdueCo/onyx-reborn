@@ -13,6 +13,14 @@ def test_landing_ok(client):
     assert "Onyx Reborn" in response.text
 
 
+def test_landing_headline(client):
+    """Landing page has the correct headline and a link to /login."""
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "A new chapter for student success" in response.text
+    assert 'href="/login"' in response.text
+
+
 def test_about_ok(client):
     response = client.get("/about")
     assert response.status_code == 200
