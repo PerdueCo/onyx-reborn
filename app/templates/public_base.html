@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Onyx Reborn{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap">
   <link rel="stylesheet" href="/static/css/onyx.css">
   {% block head_extra %}{% endblock %}
 </head>
@@ -13,7 +16,8 @@
   <header class="public-topbar">
     <span class="wordmark"><strong>Onyx</strong> Reborn</span>
     {% block topbar_right %}
-      <a href="/login" class="btn btn-primary btn-sm topbar-signin">Sign in</a>
+      <a href="/login" class="btn btn-primary btn-sm topbar-signin"
+         style="height:44px;line-height:44px;padding:0 20px;font-size:18px;border-radius:8px;">Sign in</a>
     {% endblock %}
   </header>
 
@@ -22,8 +26,10 @@
   </div>
 
   <footer class="public-footer">
-    <span class="footer-full"><strong>Onyx</strong> Reborn — BSSI Modernization</span>
-    <span class="footer-short">BSSI Modernization</span>
+    <span class="footer-full">
+      <span class="footer-wordmark"><strong>Onyx</strong> Reborn</span> — BSSI Modernization
+    </span>
+    <span class="footer-short"><strong>BSSI Modernization</strong></span>
   </footer>
 
 </body>

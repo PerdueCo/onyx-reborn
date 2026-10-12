@@ -17,7 +17,9 @@ def test_landing_headline(client):
     """Landing page has the correct headline and a link to /login."""
     response = client.get("/")
     assert response.status_code == 200
-    assert "A new chapter for student success" in response.text
+    # headline text spans a <br> so test each half separately
+    assert "A new chapter for" in response.text
+    assert "student success" in response.text
     assert 'href="/login"' in response.text
 
 

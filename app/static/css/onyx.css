@@ -50,7 +50,7 @@
   --topbar-h:      56px;
 
   /* Typography */
-  --font: -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
 }
 
 /* ------------------------------------------------------------------ */
@@ -750,22 +750,40 @@ select.form-control {
 /* ------------------------------------------------------------------ */
 
 /* Dark navy top bar for public pages */
+/* ================================================================== */
+/*  Public pages — top bar, layout, landing, footer                    */
+/* ================================================================== */
+
+/* ------------------------------------------------------------------ */
+/*  Top bar                                                             */
+/* ------------------------------------------------------------------ */
+
 .public-topbar {
   background: var(--navy);
-  height: 60px;
+  height: 92px;
   display: flex;
   align-items: center;
-  padding: 0 32px;
+  padding: 0 80px;
   justify-content: space-between;
   flex-shrink: 0;
 }
 
 .public-topbar .wordmark {
-  font-size: 20px;
+  font-size: 40px;
+  font-weight: 400;           /* "Reborn" weight; strong handles "Onyx" */
+  letter-spacing: -0.01em;
 }
 
+.public-topbar .wordmark strong {
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Public body + content wrapper                                       */
+/* ------------------------------------------------------------------ */
+
 body.public-body {
-  background: #edf0f7;
+  background: #F5F8FD;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -776,7 +794,7 @@ body.public-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 64px 80px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -788,30 +806,28 @@ body.public-body {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Landing page — two-column grid layout                              */
+/*  Landing page — two-column CSS grid                                  */
 /* ------------------------------------------------------------------ */
 
 .landing-grid {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
   gap: 48px;
+  align-items: center;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1520px;
   margin: 0 auto;
 }
 
 .landing-left {
-  flex: 0 0 auto;
-  width: 440px;
-  max-width: 100%;
+  /* left column — copy */
 }
 
 .landing-right {
-  flex: 1 1 auto;
-  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -819,26 +835,30 @@ body.public-body {
 /* ------------------------------------------------------------------ */
 
 .landing-title {
-  font-size: clamp(44px, 6vw, 88px);
+  font-family: "Inter", var(--font);
+  font-size: clamp(44px, 5.6vw, 92px);
   font-weight: 800;
   color: var(--navy);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin-bottom: 0;
 }
 
 .landing-lead {
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--blue);
-  margin-bottom: 12px;
-  line-height: 1.35;
+  font-size: clamp(22px, 2.3vw, 38px);
+  font-weight: 500;
+  color: #3B5378;
+  margin-top: 24px;
+  margin-bottom: 0;
+  line-height: 1.3;
 }
 
 .landing-sub {
-  font-size: 15px;
-  color: var(--muted);
-  margin-bottom: 32px;
+  font-size: 24px;
+  font-weight: 400;
+  color: #5B6782;
+  margin-top: 20px;
+  margin-bottom: 0;
 }
 
 /* desktop line shown, mobile line hidden by default */
@@ -846,34 +866,43 @@ body.public-body {
 .landing-sub-mobile  { display: none;  }
 
 .landing-cta-note {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 400;
+  color: #5B6782;
+  margin-top: 16px;
 }
 
 .landing-btn {
   display: block;
   width: 390px;
   max-width: 100%;
-  padding: 16px 32px;
-  border-radius: 8px;
-  font-size: 17px;
+  height: 76px;
+  line-height: 76px;
+  padding: 0 32px;
+  border-radius: 12px;
+  font-size: 24px;
   font-weight: 600;
-  background: var(--blue);
+  background: #1F6FEB;
   color: #ffffff;
   text-decoration: none;
   text-align: center;
+  margin-top: 44px;
   transition: background 0.15s;
+  /* keep SVG arrow vertically centred inside the line-height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .landing-btn:hover {
-  background: var(--blue-hover);
+  background: #1860d4;
   color: #ffffff;
   text-decoration: none;
 }
 
 .landing-btn:focus-visible {
-  outline: 3px solid var(--blue);
+  outline: 3px solid #1F6FEB;
   outline-offset: 3px;
 }
 
@@ -887,90 +916,21 @@ a:focus-visible {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Landing illustration                                                */
+/*  Landing illustration images                                         */
 /* ------------------------------------------------------------------ */
 
-.landing-illustration {
-  position: relative;
-  width: 540px;
-  height: 480px;
-  flex-shrink: 0;
+.landing-illus-desktop {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  height: auto;
 }
 
-/* scale illustration down in the 901–1200 px range */
-@media (max-width: 1200px) and (min-width: 901px) {
-  .landing-illustration {
-    transform: scale(0.82);
-    transform-origin: center center;
-  }
-}
-
-/* soft background circles */
-.illus-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: #dbe8ff;
-}
-.illus-circle-1 {
-  width: 320px; height: 320px;
-  top: 50%; left: 45%;
-  transform: translate(-50%, -50%);
-  opacity: 0.55;
-}
-.illus-circle-2 {
-  width: 220px; height: 220px;
-  top: 38%; left: 62%;
-  transform: translate(-50%, -50%);
-  opacity: 0.40;
-  background: #c5d8ff;
-}
-
-/* cards */
-.illus-card {
-  position: absolute;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-.illus-card-tl { width: 180px; top:  16px; left:  24px; }   /* grad cap   */
-.illus-card-tr { width: 180px; top:  16px; right:   0; }    /* briefcase  */
-.illus-card-cm { width: 220px; top: 160px; left:  50%; transform: translateX(-50%); z-index: 2; } /* person */
-.illus-card-bl { width: 180px; bottom: 16px; left: 24px; }  /* document   */
-.illus-card-br { width: 180px; bottom: 16px; right:  0; }   /* people     */
-
-.illus-icon {
-  flex-shrink: 0;
-  width: 40px; height: 40px;
-  color: var(--navy);
-}
-.illus-card-cm .illus-icon { width: 52px; height: 52px; }
-
-.illus-bars {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding-top: 4px;
-}
-.illus-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: #dde2ef;
-}
-.illus-bar-short { width: 55%; }
-.illus-bar-long  { width: 85%; }
-
-/* SVG connector overlay */
-.illus-connector {
-  position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
-  overflow: visible;
+.landing-illus-mobile {
+  display: none;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
 }
 
 /* ------------------------------------------------------------------ */
@@ -978,11 +938,22 @@ a:focus-visible {
 /* ------------------------------------------------------------------ */
 
 .public-footer {
-  padding: 18px 32px;
-  font-size: 12px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
+  padding: 40px 80px;
+  font-size: 18px;
+  color: #5B6782;
+  border-top: 1px solid #DCE2EC;
   text-align: left;
+}
+
+.public-footer .footer-wordmark {
+  font-size: 26px;
+  color: var(--navy);
+  font-weight: 400;
+  margin-right: 4px;
+}
+
+.public-footer .footer-wordmark strong {
+  font-weight: 700;
 }
 
 .footer-short { display: none; }
@@ -993,9 +964,28 @@ a:focus-visible {
 /* ------------------------------------------------------------------ */
 
 @media (max-width: 900px) {
+  .public-topbar {
+    height: 64px;
+    padding: 0 24px;
+  }
+
+  .public-topbar .wordmark {
+    font-size: 34px;
+    font-weight: 700;         /* both words bold on mobile */
+  }
+
+  .public-topbar .wordmark strong {
+    font-weight: 700;
+  }
+
   .topbar-signin { display: none; }
 
+  .public-content {
+    padding: 40px 24px;
+  }
+
   .landing-grid {
+    display: flex;
     flex-direction: column;
     align-items: center;
     gap: 32px;
@@ -1009,43 +999,36 @@ a:focus-visible {
   .landing-sub-desktop { display: none; }
   .landing-sub-mobile  { display: block; }
 
+  .landing-lead {
+    color: #5B6782;           /* gray on mobile, not blue */
+    font-size: 26px;
+  }
+
+  .landing-sub {
+    font-size: 22px;
+  }
+
   .landing-btn {
     width: 100%;
     max-width: 100%;
+    height: 64px;
+    line-height: 64px;
+    font-size: 22px;
+    border-radius: 12px;
+    margin-top: 32px;
   }
+
+  .landing-illus-desktop { display: none; }
+  .landing-illus-mobile  { display: block; }
 
   .public-footer {
     text-align: center;
+    padding: 28px 24px;
+    font-size: 18px;
   }
 
   .footer-full  { display: none; }
   .footer-short { display: inline; }
-
-  /* mobile illustration: smaller, only shows person + briefcase cards */
-  .landing-illustration {
-    width: 320px;
-    height: 280px;
-    transform: none;
-  }
-
-  .illus-card-tl,
-  .illus-card-bl,
-  .illus-card-br { display: none; }
-
-  .illus-card-cm {
-    width: 160px;
-    top: 40px;
-    left: 20px;
-    transform: none;
-  }
-  .illus-card-tr {
-    width: 140px;
-    top: 110px;
-    right: 20px;
-  }
-
-  .illus-circle-1 { width: 200px; height: 200px; top: 48%; left: 40%; }
-  .illus-circle-2 { width: 140px; height: 140px; top: 35%; left: 65%; }
 }
 
 /* Auth card (login / MFA) */
