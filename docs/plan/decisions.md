@@ -36,6 +36,12 @@ between the two.
 | D-22 | Imported job_type unknown | Allow `unknown` in addition to part_time/full_time/other; staff can fix it later. | CONFIRMED |
 | D-23 | Roles & approver | Administrator: all permissions including `student_updates.approve`. Staff: `students.read`, `students.manage`, `employment.manage`, `reports.read`. Separate **Reviewer** role holds `student_updates.approve` only (assign to selected staff). Student: `self_service.use`. All three seeded on Day 1. | CONFIRMED |
 | D-24 | Portal checkpoint | Schema says decide at the **Oct 11** checkpoint. Build is staff-first either way; the portal sits behind `PORTAL_ENABLED`. Read-only "My information/My employment" is cheap, so try it after staff core; the request/review queue only if Day 6 is finished by Thu Oct 15. | CONFIRMED |
+
+## Oct 11 checkpoint decisions (D-27)
+
+| # | Question | Decision | Status |
+|---|---|---|---|
+| D-27 | Oct 11 scope cut | **Staff-first confirmed.** Student portal (read-only self-service) = OUT for the hackathon; move to roadmap slide. Request/review queue = OUT. Admin user-management UI = OUT — demo users created by `scripts/seed.py`; no `/admin/users` page. Audit events still recorded to DB; no viewer page. Reports cut to **1 report + CSV** (Employment history by employer). These cuts leave 4 working days free to finish students, auth, employment, deploy, and the pitch deck. | CONFIRMED |
 | D-25 | Migrations | Alembic from day 1 (schema §4 asks for explicit migrations). | CONFIRMED |
 | D-26 | `UI_FLOW.md` | `prd.md` is the UI flow document. No separate `UI_FLOW.md` will be created. | CONFIRMED |
 

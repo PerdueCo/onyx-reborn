@@ -171,3 +171,62 @@ Copy the template for each session (newest at the bottom).
 - **Tests:** `pytest -q` → **10 passed**, 0 failed.
 - **Next item:** Day 1 Students — list/search, add form, edit form; STU number generated and
   immutable; required-field validation; acceptance checks 1 and 4 in router tests.
+
+---
+
+### 2026-10-11 — Day 2 (welcome page + planning)
+- **Items finished:**
+  1. Welcome page redesigned to match `expected-welcome.png` (desktop) and
+     `expected-welcome-responsive.png` (mobile) — three iterations:
+     - Iteration 1 (`fb560dc`): two-column CSS grid, hand-built SVG/HTML illustration,
+       responsive collapse at 900 px, `clamp(44px,6vw,88px)` headline, focus ring,
+       reduced-motion guard, footer border + left-align, 11 tests.
+     - Iteration 2 (`b4d2d49`): replaced hand-built illustration with
+       `welcome-illustration-desktop.png` / `welcome-illustration-mobile.png` from
+       `app/static/img/`; loaded Inter from Google Fonts (400/500/700/800); headline
+       `clamp(44px,5.6vw,92px)` / weight 800 / letter-spacing −0.035em / line-height 1.02;
+       subheading #3B5378 clamp(22px,2.3vw,38px) weight 500; support line #5B6782 24px;
+       CTA button 390 px × 76px radius 12px #1F6FEB; topbar 92px, logo 40px; footer
+       border-top #DCE2EC, 40px padding, 26px wordmark; mobile: gray subheading 26px,
+       full-width 64px button, centered footer "BSSI Modernization".
+     - `c7ad9f3`: added three checklist lines (welcome page done + Oct 11 checkpoint note).
+  2. **Oct 11 checkpoint** — scope cut recorded as D-27 in `decisions.md`: student portal
+     OUT, review queue OUT, admin user UI OUT, audit viewer OUT, reports cut to 1 + CSV.
+  3. `checklist.md` rewritten as a clean 5-day sprint (Mon 13 → Fri 17) with roadmap
+     section for cut items.
+- **Bob modes used:**
+  - Plan mode: wrote `docs/plan/welcome-page-redesign-plan.md` with gap analysis (8 diffs
+    listed) and 3 sub-tasks before any code was written.
+  - Agent mode: all CSS/HTML/test changes across 3 iterations; read both PNG mockups before
+    each iteration; ran `pytest -q` after every change.
+- **Key prompts:**
+  - "Plan an update to the welcome page … Compare them to the current page and list every
+    difference … List the files you will change … Wait for my OK."
+  - "Fix the welcome page to match … ILLUSTRATION: Replace … with images … FONT: Load Inter
+    … DESKTOP … MOBILE …" (full pixel-precise spec from Clarence).
+  - "End of session. Do these steps: 1. Mark done … 3. Rewrite checklist.md as a 5-day plan …"
+- **What Bob did well:** Read both PNG mockups before planning; listed every gap before
+  touching code; handled all 3 iterations cleanly in one prompt each.
+- **Image-crop decision:** Clarence provided the illustration as pre-cropped PNGs
+  (`app/static/img/welcome-illustration-desktop.png`, `…-mobile.png`) rather than having
+  Bob re-build it in HTML/CSS. Bob switched to `<img>` tags accordingly. This was a
+  Clarence-directed decision, not a Bob guess.
+- **Where I corrected it:**
+  - Iteration 1: Clarence added 4 approved-with-changes conditions (clamp instead of jump,
+    button max-width 100%, illustration scale at 901–1200 px, keep /about unbroken).
+  - Iteration 2: full pixel-spec override (topbar 92px, Inter weights, exact colors, button
+    76px, footer 40px padding) — Bob had the right structure but wrong token values.
+  - Test fix: `<br>` in headline broke the existing `"A new chapter for student success"`
+    assertion — fixed by splitting into two separate checks.
+- **Problems + fixes:**
+  - `test_landing_headline` failed on first pytest after adding `<br>` — string "A new
+    chapter for student success" no longer appears verbatim in HTML. Fixed by splitting
+    assertion into "A new chapter for" + "student success" checks.
+  - `git push` for commit `c7ad9f3` failed with "Could not resolve host: github.com"
+    (DNS/network drop). Push carried over to this session's final commit.
+- **Decisions changed:** D-27 added (Oct 11 checkpoint scope cuts — see above).
+- **Tests:** `pytest -q` → **11 passed**, 0 failed (3 smoke + 7 schema + 1 headline).
+- **Commit IDs:** `fb560dc` (welcome page v1), `b4d2d49` (welcome page v2 — exact illustration
+  + type), `c7ad9f3` (checklist lines added).
+- **Next item:** Day 1 Mon Oct 13 — Students list + search + add + edit (acceptance checks
+  1 and 4); then 1998 importer; then demo seed with ~250 fictional students.

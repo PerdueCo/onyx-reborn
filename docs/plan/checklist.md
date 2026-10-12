@@ -1,71 +1,83 @@
-# Build checklist — Onyx Reborn
+# Build checklist — Onyx Reborn (5-day sprint)
 
 Bob: do ONE unchecked item at a time, run `pytest -q`, check it off, then stop and tell
 Clarence how to see it. Mode hint in brackets: **[Ask]** understand · **[Plan]** design ·
 **[Code]** build.
 
-**Cut line:** if Day 6 isn't done by end of Thu Oct 15, skip all ⭐ stretch items.
+Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
-## Day 0 — Fri Oct 9 / Sat Oct 10 morning: Get organized
-- [x] Commit what exists: `docs/`, `.gitignore`, these plan files, `AGENTS.md`, and `docs/design/DATABASE_SCHEMA.md`. Push. (commit b8f93aa)
-- [x] [Ask] Run the reconciliation prompt from `DATABASE_SCHEMA.md` §10, then confirm D-17 to D-26 in `decisions.md`
-- [x] [Ask] Bob reads `AGENTS.md` + plan docs and asks Clarence any gap questions → update `decisions.md` (mark CONFIRMED)
-- [x] Delete duplicate mockups (`-1`, `-3` copies are identical files)
-- [x] Create `docs/bob-log.md` and log this session
+---
 
-## Day 1 — Sat Oct 10: Skeleton + database
-- [x] [Plan→Code] Project skeleton per spec §2; `requirements.txt`; `uvicorn app.main:app --reload` shows "Onyx Reborn" at `/`
-- [x] [Code] `models.py` per DATABASE_SCHEMA.md + spec §3 additions; Alembic initial migration; SQLite FK pragma; seed roles + permissions (D-23)
-- [x] [Code] Schema tests for acceptance checks 1, 2, 4 (STU number unique, 2 simultaneous jobs, bad dates/negative hours/orphans rejected) — 9 tests pass
-- [x] [Code] `base.html` sidebar layout + `onyx.css` matching mockups; `/dashboard` placeholder; 10 tests pass
-- [x] [Code] pytest set up with in-memory SQLite fixture (StaticPool, FK pragma ON); smoke tests pass
-- [ ] [Code] Students list + search (name or STU number), add form, edit form; STU number generated and immutable; required-field validation; tests (acceptance checks 1 and 4)
+## ✅ Already done (Days 0–2 equivalent)
 
-## Day 2 — Sun Oct 11: Legacy importer (the modernization proof)
-- [ ] [Ask] Bob explains the fixed-width layout back to Clarence from `MAIN.BAS`
-- [ ] [Code] `legacy_import.py` per spec §5 + tests (widths, 5+5 rows, idempotent, no SSN or birth date in DB, start_date inferred per D-21)
-- [ ] **Oct 11 checkpoint (D-24):** staff core on track? Decide portal go/no-go and record it
-- [ ] Oct 11 checkpoint: staff-first; request/review queue = no-go for now (record in decisions.md)
-- [ ] [Code] `scripts/seed.py`: runs import + creates 3 demo users (admin/staff/student linked to an imported student)
+- [x] Commit plan docs, schema, legacy analysis, mockups (commit `b8f93aa`)
+- [x] Confirm all decisions D-01 – D-26 in `decisions.md`
+- [x] Project skeleton: FastAPI + Jinja2 + SQLAlchemy + Alembic; pytest green (commit `97b1eab`)
+- [x] `models.py` — all 12 ORM tables; Alembic initial migration; FK pragma; seed roles (commit `66d2007`)
+- [x] `base.html` sidebar layout; `onyx.css` design tokens; `/dashboard` placeholder; 10 tests (commit `1dfbf7b`)
+- [x] Welcome page: two-column grid, illustration PNGs, Inter font, exact type + spacing; 11 tests (commits `fb560dc`, `b4d2d49`)
+  - ⚠️ **Day 5 polish leftovers:** desktop headline should break on exactly 2 lines ("A new chapter for / student success") — needs `<br>` confirmed at 1440 px; footer left-align verified at desktop.
 
-## Day 3 — Mon Oct 12: Landing + sign in
-- [x] Welcome page: exact illustration, type and spacing (see welcome-page-next-steps.md, Step A)
-- [ ] (Later this week, optional) 2x welcome illustration (Step B)
-- [ ] [Code] Landing page + About page (PRD §1)
-- [ ] [Code] Login, logout, password hashing, lockout after 5 fails, generic error (PRD §2)
-- [ ] [Code] Session timeout 30 min; CSRF token on forms
-- [ ] Tests: login ok / wrong password / lockout
+---
 
-## Day 4 — Tue Oct 13: MFA + roles
-- [ ] [Code] MFA setup (QR + recovery codes) and verify screens (PRD §3), using `local_credential` with the secret encrypted (D-17/D-18)
-- [ ] [Code] `require_permission` dependency + ownership check; sidebar items by permission; 403 page
-- [ ] [Code] Access matrix test (every route × role) = acceptance check 6
-- [ ] Audit log writes for sign-in, failed sign-in, access denied
+## Day 1 — Mon Oct 13: Students + 1998 importer (~4 hrs)
 
-## Day 5 — Wed Oct 14: Dashboard + Students
-- [ ] [Code] `kpis.py` + Overview page: 4 KPI cards, 2 Chart.js charts, recent activity (PRD §5)
-- [ ] [Code] Students list/search/filter/paginate (PRD §6)
-- [ ] [Code] Student detail + add/edit + duplicate warning + audit
+- [ ] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4)
+- [ ] [Code] `app/services/legacy_import.py` — fixed-width parser per spec §5; drops SSN + birth data; `start_date` inferred from enrolled_date (D-21); idempotent on re-run; tests (widths, 5+5 rows, no SSN in DB)
+- [ ] [Code] `scripts/seed.py` — runs importer on test pack + inserts ~250 fictional students + creates 3 demo users (admin / staff / student linked to an imported student)
+- [ ] [Ask] Bob explains the fixed-width record layout from `MAIN.BAS` back to Clarence before coding the importer
 
-## Day 6 — Thu Oct 15: Employment + self-service
-- [ ] [Code] Employers list/add/edit (PRD §7)
-- [ ] [Code] Add job / end job on student; validation
-- [ ] [Code] Student "My information" / "My employment" + 403 on others (PRD §8), behind `PORTAL_ENABLED`; test that staff flows work with it off (check 9)
+---
 
-## Day 7 — Fri Oct 16: Reports + Admin
-- [ ] [Code] 3 reports with filters, CSV export, print CSS (PRD §9)
-- [ ] [Code] Admin: users (create/disable/reset MFA), Import button with summary, audit log viewer (PRD §10)
-- [ ] ⭐ Change requests + Reviewer queue (mockups 14–17), with version-checked atomic approval (DATABASE_SCHEMA.md checks 7–8)
+## Day 2 — Tue Oct 14: Sign-in + 2-step TOTP + roles (~4 hrs)
 
-## Day 8 — Sat Oct 17: Ship it
-- [ ] [Code] Dockerfile; runs locally with `docker run`
-- [ ] Deploy to IBM Cloud Code Engine (fallback Render); demo accounts work live
-- [ ] [Code] README: what it is, 1998→2026 table, run locally, run tests, demo logins + MFA secrets, deploy steps, "Built with Bob" section
-- [ ] Full demo-script run-through on the live URL (scope.md "Success"); fix bugs
-- [ ] ⭐ PDF export · ⭐ PostgreSQL
+- [ ] [Code] Login, logout, password hashing (bcrypt), lockout after 5 fails, generic error message (PRD §2)
+- [ ] [Code] Session cookie (30-min timeout); CSRF token on all POST forms
+- [ ] [Code] TOTP 2-step verify screen (pyotp); MFA setup flow (QR code + 8 recovery codes) using `local_credential` (D-17/D-18); `TOTP_REQUIRED=true` env flag
+- [ ] [Code] `require_permission` FastAPI dependency; sidebar items filtered by role; 403 page
+- [ ] [Code] Audit log writes: sign-in ok, sign-in failed, access denied
+- [ ] Tests: login ok / wrong password / lockout / TOTP correct / TOTP wrong
 
-## Day 9 — Sun Oct 18: Submit (target 6 PM ET, hard stop 11:59 PM)
-- [ ] Record ≤3-min demo video → YouTube (unlisted is fine unless rules say otherwise)
-- [ ] Pitch deck PDF: team, problem (1998 app), before/after, how Bob was used, demo screens, roadmap
-- [ ] Write ≤100-word description, track = Theme 2, tech stack, improvements list (from `bob-log.md` + decisions D-03/D-06/D-08/D-12)
-- [ ] Submit on AngelHack; double-check repo is public / shared
+---
+
+## Day 3 — Wed Oct 15: Employment + employers + dashboard real numbers (~4 hrs)
+
+- [ ] [Code] Employers list + add + edit (name, address, city, state, phone — D-06 bug fixed)
+- [ ] [Code] Add job / end job on student detail page; start/end date validation; `job_type` dropdown
+- [ ] [Code] `app/services/kpis.py` — real counts: total students, active jobs, employers, students seeking work
+- [ ] [Code] Dashboard Overview: 4 KPI cards wired to real DB counts; recent activity feed (last 10 audit events); no Chart.js (cut — too slow to build well)
+- [ ] Tests: add employer, add job, end job, overlapping-date guard
+
+---
+
+## Day 4 — Thu Oct 16: 1 report + CSV + deploy + README (~4 hrs)
+
+- [ ] [Code] Employment history report: filter by employer and/or date range; paginated HTML table; CSV download button; `reports.read` permission guard (PRD §9, cut to 1 report per D-27)
+- [ ] [Code] `Dockerfile`; `.env.example` complete; `docker run` shows the app locally
+- [ ] Deploy to IBM Cloud Code Engine (fallback: Render free tier); demo accounts work on the live URL
+- [ ] [Code] `README.md`: what it is, 1998 → 2026 comparison table, run locally, run tests, demo logins + TOTP secrets, deploy steps, "Built with Bob" section
+
+---
+
+## Day 5 — Fri Oct 17: Polish + demo video + pitch deck + submit (~4 hrs)
+
+- [ ] Polish leftovers: confirm desktop headline 2-line break at 1440 px; confirm footer left-aligned; fix any visual regressions found during demo run-through
+- [ ] (Optional) 2× retina welcome illustration — see `docs/plan/welcome-page-next-steps.md` Step B
+- [ ] Full demo-script run-through on the live URL (`scope.md` "Success"); fix any bugs
+- [ ] Record ≤3-min demo video → YouTube (unlisted)
+- [ ] Pitch deck PDF: team, problem (1998 app), before/after screenshots, how Bob was used, demo screens, roadmap (portal, admin UI, review queue, PostgreSQL, PDF export)
+- [ ] Write ≤100-word submission description; track = Theme 2; tech stack; improvements list (D-03/D-06/D-08/D-12)
+- [ ] Submit on AngelHack by 6 PM ET; verify repo is public / shared
+
+---
+
+## Roadmap (after hackathon — cut from sprint per D-27)
+
+- Student portal: read-only "My information" / "My employment" behind `PORTAL_ENABLED`
+- Request/review queue with version-checked atomic approval (`ChangeRequest` model already in DB)
+- Admin user-management UI (`/admin/users` create/disable/reset MFA)
+- Audit log viewer page
+- 2nd and 3rd reports (students by program; students seeking work)
+- PDF export (print CSS already in plan)
+- PostgreSQL upgrade (Alembic + `render_as_batch` already wired)
+- Real identity provider (SAML/OIDC) — `user_account.provider` column already in schema
