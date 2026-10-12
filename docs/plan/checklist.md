@@ -25,9 +25,12 @@ Clarence how to see it. Mode hint in brackets: **[Ask]** understand · **[Plan]*
 - [ ] [Ask] Bob explains the fixed-width layout back to Clarence from `MAIN.BAS`
 - [ ] [Code] `legacy_import.py` per spec §5 + tests (widths, 5+5 rows, idempotent, no SSN or birth date in DB, start_date inferred per D-21)
 - [ ] **Oct 11 checkpoint (D-24):** staff core on track? Decide portal go/no-go and record it
+- [ ] Oct 11 checkpoint: staff-first; request/review queue = no-go for now (record in decisions.md)
 - [ ] [Code] `scripts/seed.py`: runs import + creates 3 demo users (admin/staff/student linked to an imported student)
 
 ## Day 3 — Mon Oct 12: Landing + sign in
+- [x] Welcome page: exact illustration, type and spacing (see welcome-page-next-steps.md, Step A)
+- [ ] (Later this week, optional) 2x welcome illustration (Step B)
 - [ ] [Code] Landing page + About page (PRD §1)
 - [ ] [Code] Login, logout, password hashing, lockout after 5 fails, generic error (PRD §2)
 - [ ] [Code] Session timeout 30 min; CSRF token on forms
