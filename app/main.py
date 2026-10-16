@@ -1,6 +1,9 @@
 """Onyx Reborn — FastAPI application entry point."""
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import get_settings
@@ -30,3 +33,48 @@ app.include_router(public_router.router)
 app.include_router(auth_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(students_router.router)
+
+# ---------------------------------------------------------------------------
+# Jinja2 globals
+# ---------------------------------------------------------------------------
+
+_templates = Jinja2Templates(directory="app/templates")
+
+# Make csrf_token() callable inside all templates as {{ csrf_token(request) }}
+from app.security import csrf_token as _csrf_token_fn  # noqa: E402
+_templates.env.globals["csrf_token"] = _csrf_token_fn
+
+# ---------------------------------------------------------------------------
+# Exception handlers
+# ---------------------------------------------------------------------------
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Render a friendly 403 page; pass through everything else."""
+    if exc.status_code == 403:
+        # Try to get current_user for the sidebar, but don't fail if unavailable
+        try:
+            from app.db import SessionLocal
+            from app.security import get_current_user, get_user_permissions
+            db = SessionLocal()
+            try:
+                user = get_current_user(request, db)
+                user_perms = get_user_permissions(user, db) if user else set()
+            finally:
+                db.close()
+        except Exception:
+            user = None
+            user_perms = set()
+        return _templates.TemplateResponse(
+            request,
+            "403.html",
+            {"current_user": user, "user_perms": user_perms},
+            status_code=403,
+        )
+    # For 303 redirects raised as HTTPExceptions (e.g. from require_permission)
+    if exc.status_code == 303:
+        from fastapi.responses import RedirectResponse
+        location = exc.headers.get("Location", "/login") if exc.headers else "/login"
+        return RedirectResponse(location, status_code=303)
+    raise exc

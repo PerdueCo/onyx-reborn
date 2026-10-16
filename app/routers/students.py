@@ -1,17 +1,21 @@
 """Students router — list, create, edit, detail."""
 import re
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app import audit
 from app.db import get_db
-from app.models import Employer, Employment, Program, Student
+from app.models import Employer, Employment, Program, Student, UserAccount
+from app.security import get_user_permissions, require_permission
 
 router = APIRouter(prefix="/students", tags=["students"])
 templates = Jinja2Templates(directory="app/templates")
+
+_read_dep = require_permission("students.read")
+_manage_dep = require_permission("students.manage")
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -74,12 +78,25 @@ def _validate_form(
     return errors
 
 
+def _ctx(current_user: UserAccount, db: Session) -> dict:
+    """Common template context keys."""
+    return {
+        "current_user": current_user,
+        "user_perms": get_user_permissions(current_user, db),
+    }
+
+
 # ---------------------------------------------------------------------------
 # List
 # ---------------------------------------------------------------------------
 
 @router.get("", response_class=HTMLResponse)
-async def student_list(request: Request, q: str = "", db: Session = Depends(get_db)):
+async def student_list(
+    request: Request,
+    q: str = "",
+    current_user: UserAccount = Depends(_read_dep),
+    db: Session = Depends(get_db),
+):
     _seed_programs(db)
     query = db.query(Student)
     if q:
@@ -91,14 +108,12 @@ async def student_list(request: Request, q: str = "", db: Session = Depends(get_
             | Student.student_number.ilike(like)
         )
     students = query.order_by(Student.last_name, Student.first_name).all()
-
-    # Attach program code for display
     programs = {p.id: p for p in db.query(Program).all()}
     return templates.TemplateResponse(
         request,
         "students/list.html",
         {
-            "current_user": None,
+            **_ctx(current_user, db),
             "students": students,
             "programs": programs,
             "q": q,
@@ -111,14 +126,18 @@ async def student_list(request: Request, q: str = "", db: Session = Depends(get_
 # ---------------------------------------------------------------------------
 
 @router.get("/new", response_class=HTMLResponse)
-async def student_new_form(request: Request, db: Session = Depends(get_db)):
+async def student_new_form(
+    request: Request,
+    current_user: UserAccount = Depends(_manage_dep),
+    db: Session = Depends(get_db),
+):
     _seed_programs(db)
     programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
     return templates.TemplateResponse(
         request,
         "students/form.html",
         {
-            "current_user": None,
+            **_ctx(current_user, db),
             "student": None,
             "programs": programs,
             "errors": [],
@@ -145,6 +164,7 @@ async def student_new_save(
     high_school: str = Form(""),
     seeking_employment: str = Form(""),
     desired_job: str = Form(""),
+    current_user: UserAccount = Depends(_manage_dep),
     db: Session = Depends(get_db),
 ):
     _seed_programs(db)
@@ -179,7 +199,7 @@ async def student_new_save(
             request,
             "students/form.html",
             {
-                "current_user": None,
+                **_ctx(current_user, db),
                 "student": None,
                 "programs": programs,
                 "errors": errors,
@@ -209,6 +229,8 @@ async def student_new_save(
     db.add(student)
     db.commit()
     db.refresh(student)
+    audit.log_event(db, current_user.id, "student_create", "student", student.id,
+                    {"student_number": student.student_number})
     return RedirectResponse(f"/students/{student.id}", status_code=303)
 
 
@@ -218,7 +240,10 @@ async def student_new_save(
 
 @router.get("/{student_id}/edit", response_class=HTMLResponse)
 async def student_edit_form(
-    student_id: int, request: Request, db: Session = Depends(get_db)
+    student_id: int,
+    request: Request,
+    current_user: UserAccount = Depends(_manage_dep),
+    db: Session = Depends(get_db),
 ):
     student = db.get(Student, student_id)
     if student is None:
@@ -228,7 +253,7 @@ async def student_edit_form(
         request,
         "students/form.html",
         {
-            "current_user": None,
+            **_ctx(current_user, db),
             "student": student,
             "programs": programs,
             "errors": [],
@@ -256,6 +281,7 @@ async def student_edit_save(
     high_school: str = Form(""),
     seeking_employment: str = Form(""),
     desired_job: str = Form(""),
+    current_user: UserAccount = Depends(_manage_dep),
     db: Session = Depends(get_db),
 ):
     student = db.get(Student, student_id)
@@ -294,7 +320,7 @@ async def student_edit_save(
             request,
             "students/form.html",
             {
-                "current_user": None,
+                **_ctx(current_user, db),
                 "student": student,
                 "programs": programs,
                 "errors": errors,
@@ -320,6 +346,8 @@ async def student_edit_save(
     student.desired_job = desired_job.strip() or None
     student.version = (student.version or 1) + 1
     db.commit()
+    audit.log_event(db, current_user.id, "student_edit", "student", student.id,
+                    {"version": student.version})
     return RedirectResponse(f"/students/{student.id}", status_code=303)
 
 
@@ -329,7 +357,10 @@ async def student_edit_save(
 
 @router.get("/{student_id}", response_class=HTMLResponse)
 async def student_detail(
-    student_id: int, request: Request, db: Session = Depends(get_db)
+    student_id: int,
+    request: Request,
+    current_user: UserAccount = Depends(_read_dep),
+    db: Session = Depends(get_db),
 ):
     student = db.get(Student, student_id)
     if student is None:
@@ -346,7 +377,7 @@ async def student_detail(
         request,
         "students/detail.html",
         {
-            "current_user": None,
+            **_ctx(current_user, db),
             "student": student,
             "program": program,
             "jobs": jobs,

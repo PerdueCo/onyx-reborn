@@ -28,9 +28,8 @@ def test_about_ok(client):
     assert response.status_code == 200
 
 
-def test_dashboard_ok(client):
-    response = client.get("/dashboard")
-    assert response.status_code == 200
-    assert "Overview" in response.text
-    assert "sidebar" in response.text   # layout class present
-    assert "DEV MODE" in response.text  # dev banner shown when no user
+def test_dashboard_redirects_when_unauthenticated(client):
+    """Unauthenticated GET /dashboard → 303 redirect to /login."""
+    response = client.get("/dashboard", follow_redirects=False)
+    assert response.status_code == 303
+    assert "/login" in response.headers.get("location", "")
