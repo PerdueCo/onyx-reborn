@@ -45,5 +45,13 @@ between the two.
 | D-25 | Migrations | Alembic from day 1 (schema §4 asks for explicit migrations). | CONFIRMED |
 | D-26 | `UI_FLOW.md` | `prd.md` is the UI flow document. No separate `UI_FLOW.md` will be created. | CONFIRMED |
 
+## Auth decisions (D-28 – D-30)
+
+| # | Question | Decision | Status |
+|---|---|---|---|
+| D-28 | Overview MVP scope | Dashboard shows 4 KPI cards (placeholder `—` values until Day 5 employment data exists). No charts in MVP. Real DB counts wired when employment is built. | CONFIRMED |
+| D-29 | Users and access light | Admin-only `/admin/users` page: list users, Unlock (clear `locked_until`), Reset password (set a temp password), Change role. No create-user UI for MVP; users created by `reset_db.py`. | CONFIRMED |
+| D-30 | 2-step always required | TOTP MFA is always enforced for Admin and Staff; no `TOTP_REQUIRED` flag. Tests generate real TOTP codes via `pyotp.TOTP(secret).now()` from the seeded known secret — no bypass. Demo users created only when `DEMO_MODE=true` (via `reset_db.py`). | CONFIRMED |
+
 Amends: **D-13** → see D-17/D-18. **D-15** → see D-24. **D-08** confirmed by the schema
 (multiple simultaneous jobs; same employer may repeat).

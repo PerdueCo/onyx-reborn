@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% endblock %}
+{% set active_page = "students" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ student.first_name }} {{ student.last_name }}</h1>
+    <p class="page-subtitle">{{ student.student_number }}</p>
+  </div>
+  <div style="display:flex;gap:.5rem">
+    <a href="/students/{{ student.id }}/edit" class="btn btn-primary">Edit</a>
+    <a href="/students" class="btn btn-secondary">All Students</a>
+  </div>
+</div>
+
+<!-- Profile card -->
+<div class="card" style="margin-bottom:1rem">
+  <div class="card-header">
+    <span class="card-title">Profile</span>
+    <span class="badge badge-{{ student.status }}">{{ student.status|capitalize }}</span>
+  </div>
+  <dl class="detail-grid">
+    <dt>Student #</dt>
+    <dd>{{ student.student_number }}</dd>
+
+    <dt>Program</dt>
+    <dd>
+      {% if program %}{{ program.code }} — {{ program.name }}{% else %}<span class="text-muted">—</span>{% endif %}
+    </dd>
+
+    <dt>Email</dt>
+    <dd>{{ student.email or '—' }}</dd>
+
+    <dt>Home phone</dt>
+    <dd>{{ student.home_phone or '—' }}</dd>
+
+    <dt>Work phone</dt>
+    <dd>{{ student.work_phone or '—' }}</dd>
+
+    <dt>Address</dt>
+    <dd>
+      {% if student.address %}
+        {{ student.address }}{% if student.city or student.state or student.zip %},
+        {{ student.city or '' }}{% if student.state %} {{ student.state }}{% endif %}{% if student.zip %} {{ student.zip }}{% endif %}
+        {% endif %}
+      {% else %}
+        <span class="text-muted">—</span>
+      {% endif %}
+    </dd>
+
+    <dt>High school</dt>
+    <dd>{{ student.high_school or '—' }}</dd>
+
+    <dt>Seeking employment</dt>
+    <dd>
+      {% if student.seeking_employment is none %}
+        <span class="text-muted">Unknown</span>
+      {% elif student.seeking_employment %}
+        <span class="badge badge-active">Yes</span>
+      {% else %}
+        No
+      {% endif %}
+    </dd>
+
+    {% if student.desired_job %}
+    <dt>Desired job</dt>
+    <dd>{{ student.desired_job }}</dd>
+    {% endif %}
+
+    <dt>Record version</dt>
+    <dd>{{ student.version }}</dd>
+  </dl>
+</div>
+
+<!-- Employment history -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Employment</span>
+    <a href="/employment/new?student_id={{ student.id }}" class="btn btn-secondary btn-sm">Add Job</a>
+  </div>
+  {% if jobs %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Employer</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Hours/wk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emp, employer in jobs %}
+      <tr>
+        <td>{{ employer.name }}</td>
+        <td>{{ emp.job_title }}</td>
+        <td>
+          <span class="badge badge-{{ emp.job_type }}">
+            {{ emp.job_type|replace('_', ' ')|capitalize }}
+          </span>
+        </td>
+        <td>{{ emp.start_date }}</td>
+        <td>
+          {% if emp.end_date %}
+            {{ emp.end_date }}
+          {% else %}
+            <span class="badge badge-active">Current</span>
+          {% endif %}
+        </td>
+        <td>{{ emp.hours_per_week or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <p>No employment records yet. <a href="/employment/new?student_id={{ student.id }}">Add a job</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

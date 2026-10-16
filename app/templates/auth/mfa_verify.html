@@ -1,0 +1,24 @@
+{% extends "public_base.html" %}
+{% block title %}Verify Your Sign-In — Onyx Reborn{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1 class="auth-title">Verify your sign-in</h1>
+  <p style="margin-bottom:1rem;font-size:14px;color:var(--muted)">
+    Enter the 6-digit code from your authenticator app.
+  </p>
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" action="/mfa/verify" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <div class="form-group">
+      <label class="form-label" for="code">Authentication code</label>
+      <input class="form-input" id="code" name="code" type="text" inputmode="numeric"
+             pattern="[0-9]{6}" maxlength="6" autofocus autocomplete="one-time-code" required
+             style="letter-spacing:.25em;font-size:22px;text-align:center">
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Verify</button>
+    <p style="margin-top:1rem;font-size:13px;text-align:center">
+      Lost your device? Enter a <a href="/mfa/verify?use_recovery=1">recovery code</a> above instead.
+    </p>
+  </form>
+</div>
+{% endblock %}

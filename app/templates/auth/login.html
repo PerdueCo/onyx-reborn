@@ -1,0 +1,35 @@
+{% extends "public_base.html" %}
+{% block title %}Sign In — Onyx Reborn{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h1 class="auth-title">Sign in</h1>
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" action="/login" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <input type="hidden" name="next" value="{{ next }}">
+    <div class="form-group">
+      <label class="form-label" for="email">Email address</label>
+      <input class="form-input" id="email" name="email" type="email" autofocus autocomplete="email" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <input class="form-input" id="password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Sign in</button>
+    <p style="margin-top:1rem;font-size:13px;color:var(--muted)">
+      Forgot password? Contact your administrator.
+    </p>
+    <p style="margin-top:.5rem;font-size:13px">
+      <a href="/">&larr; Back to welcome</a>
+    </p>
+  </form>
+  {% if demo_mode %}
+  <div class="alert alert-info" style="margin-top:1.5rem;font-size:12px">
+    <strong>Demo accounts</strong><br>
+    admin@onyx.demo / OnyxAdmin2026!<br>
+    staff@onyx.demo / OnyxStaff2026!<br>
+    (Run <code>reset_db.py</code> for TOTP secrets)
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

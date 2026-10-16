@@ -1083,3 +1083,127 @@ a:focus-visible {
 .gap-2 { gap: 8px; }
 .gap-3 { gap: 12px; }
 .w-full { width: 100%; }
+
+/* ------------------------------------------------------------------ */
+/*  form-input / form-select aliases (alias for form-control)          */
+/* ------------------------------------------------------------------ */
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  line-height: 1.4;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(61, 111, 232, 0.12);
+}
+
+.form-input::placeholder { color: var(--muted); }
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+textarea.form-input { resize: vertical; }
+
+.input-error { border-color: var(--red) !important; }
+
+/* ------------------------------------------------------------------ */
+/*  form-grid (2-col responsive layout inside a card)                  */
+/* ------------------------------------------------------------------ */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  required marker                                                     */
+/* ------------------------------------------------------------------ */
+
+.required { color: var(--red); margin-left: 2px; }
+
+/* ------------------------------------------------------------------ */
+/*  form-hint inline label annotation                                   */
+/* ------------------------------------------------------------------ */
+
+.form-hint {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Empty state                                                         */
+/* ------------------------------------------------------------------ */
+
+.empty-state {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Detail page: definition list grid                                   */
+/* ------------------------------------------------------------------ */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px 16px;
+  font-size: 14px;
+}
+
+.detail-grid dt {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detail-grid dd {
+  color: var(--text);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/*  auth-title                                                          */
+/* ------------------------------------------------------------------ */
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ */
+/*  public-content centering for auth pages                            */
+/* ------------------------------------------------------------------ */
+
+.public-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px 60px;
+  min-height: calc(100vh - 92px - 60px);
+}

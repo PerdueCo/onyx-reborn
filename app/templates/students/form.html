@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% if student %}
+  {% block title %}Edit {{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% endblock %}
+{% else %}
+  {% block title %}Add Student — Onyx Reborn{% endblock %}
+{% endif %}
+{% set active_page = "students" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    {% if student %}
+      <h1>Edit Student</h1>
+      <p class="page-subtitle">
+        <a href="/students/{{ student.id }}">{{ student.student_number }}</a> —
+        {{ student.first_name }} {{ student.last_name }}
+      </p>
+    {% else %}
+      <h1>Add Student</h1>
+      <p class="page-subtitle">A STU number will be assigned automatically.</p>
+    {% endif %}
+  </div>
+  <div>
+    {% if student %}
+    <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+    {% else %}
+    <a href="/students" class="btn btn-secondary">Cancel</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Validation errors -->
+{% if errors %}
+<div class="alert alert-error" role="alert">
+  <ul style="margin:0;padding-left:1.25rem">
+    {% for e in errors %}
+    <li>{{ e }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- Duplicate warning (non-blocking) -->
+{% if duplicate %}
+<div class="alert alert-warning" role="alert">
+  A student with this name and phone already exists:
+  <a href="/students/{{ duplicate.id }}">{{ duplicate.student_number }} — {{ duplicate.first_name }} {{ duplicate.last_name }}</a>.
+  You can still save this record.
+</div>
+{% endif %}
+
+<!-- Macros to get current field value (edit: from model; error re-show: from vals) -->
+{% macro fval(name, default="") %}
+  {%- if vals and vals[name] is defined -%}
+    {{ vals[name] }}
+  {%- elif student and student[name] is defined -%}
+    {{ student[name] or default }}
+  {%- else -%}
+    {{ default }}
+  {%- endif -%}
+{% endmacro %}
+
+<form method="post" novalidate>
+  <!-- Required fields -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="card-title">Name &amp; Program</span></div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label class="form-label" for="first_name">First name <span class="required">*</span></label>
+        <input class="form-input {% if 'First name' in errors|join %} input-error{% endif %}"
+               id="first_name" name="first_name" type="text" maxlength="64" required
+               value="{{ fval('first_name') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="last_name">Last name <span class="required">*</span></label>
+        <input class="form-input {% if 'Last name' in errors|join %} input-error{% endif %}"
+               id="last_name" name="last_name" type="text" maxlength="64" required
+               value="{{ fval('last_name') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="program_id">Program</label>
+        <select class="form-select" id="program_id" name="program_id">
+          <option value="">— None —</option>
+          {% for p in programs %}
+          <option value="{{ p.id }}"
+            {% if (vals.get('program_id') or (student.program_id|string if student else '')) == p.id|string %}selected{% endif %}>
+            {{ p.code }} — {{ p.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="status">Status</label>
+        <select class="form-select" id="status" name="status">
+          {% for s_val in ['active', 'inactive', 'archived'] %}
+          <option value="{{ s_val }}"
+            {% if fval('status', 'active') == s_val %}selected{% endif %}>
+            {{ s_val|capitalize }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Contact info -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="card-title">Contact</span></div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" id="email" name="email" type="email" maxlength="256"
+               value="{{ fval('email') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="home_phone">
+          Home phone
+          <span class="form-hint">(555) 555-0101</span>
+        </label>
+        <input class="form-input {% if 'Home phone' in errors|join %} input-error{% endif %}"
+               id="home_phone" name="home_phone" type="tel" maxlength="14"
+               placeholder="(555) 555-0101"
+               value="{{ fval('home_phone') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="work_phone">
+          Work phone
+          <span class="form-hint">(555) 555-0101</span>
+        </label>
+        <input class="form-input {% if 'Work phone' in errors|join %} input-error{% endif %}"
+               id="work_phone" name="work_phone" type="tel" maxlength="14"
+               placeholder="(555) 555-0101"
+               value="{{ fval('work_phone') }}">
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="address">Street address</label>
+        <input class="form-input" id="address" name="address" type="text" maxlength="256"
+               value="{{ fval('address') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="city">City</label>
+        <input class="form-input" id="city" name="city" type="text" maxlength="64"
+               value="{{ fval('city') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="state">State</label>
+        <select class="form-select" id="state" name="state">
+          <option value="">— Select —</option>
+          {% for abbr in ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'] %}
+          <option value="{{ abbr }}" {% if fval('state') == abbr %}selected{% endif %}>{{ abbr }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="zip">ZIP code</label>
+        <input class="form-input" id="zip" name="zip" type="text" maxlength="16"
+               value="{{ fval('zip') }}">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Background & Employment interest -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="card-title">Background &amp; Employment Interest</span></div>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label class="form-label" for="high_school">High school</label>
+        <input class="form-input" id="high_school" name="high_school" type="text" maxlength="128"
+               value="{{ fval('high_school') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="seeking_employment">Seeking employment</label>
+        <select class="form-select" id="seeking_employment" name="seeking_employment">
+          <option value="" {% if not fval('seeking_employment') %}selected{% endif %}>Unknown</option>
+          <option value="yes" {% if fval('seeking_employment') == 'yes' or (student and student.seeking_employment == True) %}selected{% endif %}>Yes</option>
+          <option value="no"  {% if fval('seeking_employment') == 'no' or (student and student.seeking_employment == False) %}selected{% endif %}>No</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="desired_job">Desired job / notes</label>
+        <textarea class="form-input" id="desired_job" name="desired_job" rows="3"
+                  maxlength="2000">{{ fval('desired_job') }}</textarea>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+    <button type="submit" class="btn btn-primary">
+      {% if student %}Save Changes{% else %}Add Student{% endif %}
+    </button>
+    {% if student %}
+    <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+    {% else %}
+    <a href="/students" class="btn btn-secondary">Cancel</a>
+    {% endif %}
+  </div>
+
+</form>
+{% endblock %}

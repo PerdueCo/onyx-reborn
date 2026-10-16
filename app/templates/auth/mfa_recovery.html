@@ -1,0 +1,19 @@
+{% extends "public_base.html" %}
+{% block title %}Recovery Codes — Onyx Reborn{% endblock %}
+{% block content %}
+<div class="auth-card" style="max-width:480px">
+  <h1 class="auth-title">Save your recovery codes</h1>
+  <p style="margin-bottom:1rem;font-size:14px;color:var(--muted)">
+    Save these codes somewhere safe. Each code can only be used once.
+    They let you sign in if you lose access to your authenticator app.
+  </p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:1.5rem;font-family:monospace;font-size:14px;line-height:2">
+    {% for c in codes %}
+    <div>{{ c }}</div>
+    {% endfor %}
+  </div>
+  <a href="/dashboard" class="btn btn-primary" style="width:100%;text-align:center">
+    I've saved my codes — continue
+  </a>
+</div>
+{% endblock %}

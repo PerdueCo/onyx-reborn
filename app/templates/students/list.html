@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Students — Onyx Reborn{% endblock %}
+{% set active_page = "students" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Students</h1>
+    <p class="page-subtitle">Search, add, and manage student records.</p>
+  </div>
+  <div>
+    <a href="/students/new" class="btn btn-primary">
+      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+      Add Student
+    </a>
+  </div>
+</div>
+
+<!-- Search bar -->
+<div class="card" style="margin-bottom:1rem">
+  <form method="get" action="/students" role="search" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+    <input
+      class="form-input"
+      style="flex:1;min-width:200px;max-width:380px"
+      type="search"
+      name="q"
+      value="{{ q }}"
+      placeholder="Search by name or STU number…"
+      aria-label="Search students"
+      autocomplete="off"
+    >
+    <button type="submit" class="btn btn-primary btn-sm">Search</button>
+    {% if q %}
+    <a href="/students" class="btn btn-secondary btn-sm">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Table / empty state -->
+<div class="card">
+  {% if students %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>STU #</th>
+        <th>Name</th>
+        <th>Program</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td>
+          <a href="/students/{{ s.id }}" class="stu-number">{{ s.student_number }}</a>
+        </td>
+        <td>{{ s.last_name }}, {{ s.first_name }}</td>
+        <td>
+          {% if s.program_id and programs.get(s.program_id) %}
+            {{ programs[s.program_id].code }}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge badge-{{ s.status }}">{{ s.status|capitalize }}</span>
+        </td>
+        <td style="text-align:right">
+          <a href="/students/{{ s.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    {% if q %}
+    <div class="empty-state">
+      <p>No students matched <strong>{{ q }}</strong>.</p>
+      <a href="/students">Show all students</a>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>No students yet — <a href="/students/new">add one</a> or import the 1998 data.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
