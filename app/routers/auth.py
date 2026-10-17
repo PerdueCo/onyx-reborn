@@ -15,6 +15,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
 from app import audit
+from app.config import get_settings
 from app.db import get_db
 from app.models import LocalCredential, UserAccount, UserRole, Role
 from app.security import (
@@ -32,6 +33,14 @@ from app.security import (
     verify_totp,
 )
 from app.templates_env import templates
+from scripts.reset_db import (
+    ADMIN_EMAIL,
+    ADMIN_PASSWORD,
+    ADMIN_TOTP_SECRET,
+    STAFF_EMAIL,
+    STAFF_PASSWORD,
+    STAFF_TOTP_SECRET,
+)
 
 router = APIRouter(tags=["auth"])
 _LOCKOUT_THRESHOLD = 5
@@ -78,7 +87,7 @@ async def login_get(
 ):
     if _is_fully_signed_in(request, db):
         return RedirectResponse("/dashboard", status_code=302)
-    from app.config import get_settings
+    settings = get_settings()
     return templates.TemplateResponse(
         request,
         "auth/login.html",
@@ -86,7 +95,11 @@ async def login_get(
             "csrf": csrf_token(request),
             "next": next,
             "error": None,
-            "demo_mode": get_settings().DEMO_MODE,
+            "demo_mode": settings.DEMO_MODE,
+            "demo_admin_email": ADMIN_EMAIL if settings.DEMO_MODE else "",
+            "demo_admin_password": ADMIN_PASSWORD if settings.DEMO_MODE else "",
+            "demo_staff_email": STAFF_EMAIL if settings.DEMO_MODE else "",
+            "demo_staff_password": STAFF_PASSWORD if settings.DEMO_MODE else "",
         },
     )
 
@@ -105,9 +118,9 @@ async def login_post(
     db: Session = Depends(get_db),
 ):
     check_csrf(request, csrf_token_field)
-    from app.config import get_settings
 
     def _fail(msg: str) -> HTMLResponse:
+        settings = get_settings()
         return templates.TemplateResponse(
             request,
             "auth/login.html",
@@ -115,7 +128,11 @@ async def login_post(
                 "csrf": csrf_token(request),
                 "next": next,
                 "error": msg,
-                "demo_mode": get_settings().DEMO_MODE,
+                "demo_mode": settings.DEMO_MODE,
+                "demo_admin_email": ADMIN_EMAIL if settings.DEMO_MODE else "",
+                "demo_admin_password": ADMIN_PASSWORD if settings.DEMO_MODE else "",
+                "demo_staff_email": STAFF_EMAIL if settings.DEMO_MODE else "",
+                "demo_staff_password": STAFF_PASSWORD if settings.DEMO_MODE else "",
             },
             status_code=200,
         )
@@ -272,12 +289,28 @@ async def mfa_verify_get(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse("/login", status_code=302)
     if request.session.get("mfa_ok"):
         return RedirectResponse("/dashboard", status_code=302)
+
+    settings = get_settings()
+    demo_code: str | None = None
+
+    if settings.DEMO_MODE and uid:
+        user = db.get(UserAccount, uid)
+        if user:
+            secret: str | None = None
+            if user.email == ADMIN_EMAIL:
+                secret = ADMIN_TOTP_SECRET
+            elif user.email == STAFF_EMAIL:
+                secret = STAFF_TOTP_SECRET
+            if secret:
+                demo_code = pyotp.TOTP(secret).now()
+
     return templates.TemplateResponse(
         request,
         "auth/mfa_verify.html",
         {
             "csrf": csrf_token(request),
             "error": None,
+            "demo_code": demo_code,
         },
     )
 

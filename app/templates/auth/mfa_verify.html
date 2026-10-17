@@ -8,7 +8,7 @@
     Enter the 6-digit code from your authenticator app.
   </p>
   {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
-  <form method="post" action="/mfa/verify" novalidate>
+  <form method="post" action="/mfa/verify" novalidate id="mfa-verify-form">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
     <div class="form-group">
       <label class="form-label" for="code">Authentication code</label>
@@ -21,5 +21,20 @@
       Lost your device? Enter a <a href="/mfa/verify?use_recovery=1">recovery code</a> above instead.
     </p>
   </form>
+  {% if demo_code %}
+  <div class="demo-hint" id="demo-code-hint" style="margin-top:1.5rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:6px">
+    <p style="margin:0 0 .5rem;font-size:13px;font-weight:600;color:var(--text)">Demo account — current code:</p>
+    <p style="margin:0 0 .75rem;font-size:22px;letter-spacing:.25em;font-family:monospace;color:var(--text)">
+      {{ demo_code[:3] }}&nbsp;{{ demo_code[3:] }}
+    </p>
+    <form method="post" action="/mfa/verify" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <input type="hidden" name="code" value="{{ demo_code }}">
+      <button type="submit" class="btn btn-secondary btn-sm" style="width:100%">
+        Use demo code
+      </button>
+    </form>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -32,6 +32,10 @@ STAFF_PASSWORD     = "OnyxStaff2026!"
 STAFF_TOTP_SECRET  = "JBSWY3DPEHPK3PXQ"
 STAFF_DISPLAY_NAME = "Demo Staff"
 
+NEWSTAFF_EMAIL        = "newstaff@onyx.demo"
+NEWSTAFF_PASSWORD     = "OnyxNew2026!"
+NEWSTAFF_DISPLAY_NAME = "New Staff"
+
 
 # ---------------------------------------------------------------------------
 # Step helpers
@@ -151,8 +155,8 @@ def _create_demo_users(session) -> None:
         cred = LocalCredential(
             user_account_id=user.id,
             password_hash=hash_password(password),
-            totp_secret_encrypted=encrypt_totp_secret(totp_secret),
-            mfa_enabled=True,
+            totp_secret_encrypted=encrypt_totp_secret(totp_secret) if totp_secret else None,
+            mfa_enabled=totp_secret is not None,
             recovery_codes_hash=[],
             failed_logins=0,
         )
@@ -167,6 +171,7 @@ def _create_demo_users(session) -> None:
 
     _make_user(ADMIN_EMAIL, ADMIN_DISPLAY_NAME, ADMIN_PASSWORD, ADMIN_TOTP_SECRET, "Administrator")
     _make_user(STAFF_EMAIL, STAFF_DISPLAY_NAME, STAFF_PASSWORD, STAFF_TOTP_SECRET, "Staff")
+    _make_user(NEWSTAFF_EMAIL, NEWSTAFF_DISPLAY_NAME, NEWSTAFF_PASSWORD, None, "Staff")
     session.commit()
 
 
@@ -190,6 +195,10 @@ def _print_summary(session) -> None:
     print(f"  Staff   email : {STAFF_EMAIL}")
     print(f"          pass  : {STAFF_PASSWORD}")
     print(f"          TOTP  : {STAFF_TOTP_SECRET}")
+    print("  " + "-"*55)
+    print(f"  NewStaff email : {NEWSTAFF_EMAIL}")
+    print(f"           pass  : {NEWSTAFF_PASSWORD}")
+    print(f"           TOTP  : (none — will be shown QR setup on first sign-in)")
     print("  " + "-"*55)
     print()
     print("  Scan TOTP secret with an authenticator app,")

@@ -25,11 +25,28 @@
     </p>
   </form>
   {% if demo_mode %}
-  <div class="alert alert-info" style="margin-top:1.5rem;font-size:12px">
-    <strong>Demo accounts</strong><br>
-    admin@onyx.demo / OnyxAdmin2026!<br>
-    staff@onyx.demo / OnyxStaff2026!<br>
-    (Run <code>reset_db.py</code> for TOTP secrets)
+  <div class="demo-hint" style="margin-top:1.5rem;padding:1rem;background:var(--surface);border:1px solid var(--border);border-radius:6px">
+    <p style="margin:0 0 .75rem;font-size:13px;font-weight:600;color:var(--text)">Try the demo</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <form method="post" action="/login" novalidate style="display:contents">
+        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <input type="hidden" name="email" value="{{ demo_staff_email }}">
+        <input type="hidden" name="password" value="{{ demo_staff_password }}">
+        <button type="submit" class="btn btn-secondary btn-sm" style="flex:1;min-width:120px">
+          Try as Staff
+        </button>
+      </form>
+      <form method="post" action="/login" novalidate style="display:contents">
+        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <input type="hidden" name="email" value="{{ demo_admin_email }}">
+        <input type="hidden" name="password" value="{{ demo_admin_password }}">
+        <button type="submit" class="btn btn-secondary btn-sm" style="flex:1;min-width:120px">
+          Try as Administrator
+        </button>
+      </form>
+    </div>
   </div>
   {% endif %}
 </div>
