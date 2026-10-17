@@ -7,13 +7,20 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.templates_env import templates as _templates
 
-from app.config import get_settings
+from app.config import _require, get_settings
 from app.routers import public as public_router
 from app.routers import auth as auth_router
 from app.routers import dashboard as dashboard_router
 from app.routers import students as students_router
 
 settings = get_settings()
+
+# ── Startup guard ────────────────────────────────────────────────────────────
+# Abort immediately with a clear message if required secrets are missing.
+# This prevents the app from booting with a random/empty key and silently
+# encrypting TOTP secrets that can never be decrypted after a restart.
+_require(settings.SESSION_SECRET, "SESSION_SECRET")
+_require(settings.MFA_ENC_KEY, "MFA_ENC_KEY")
 
 app = FastAPI(
     title="Onyx Reborn",

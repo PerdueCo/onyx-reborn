@@ -39,14 +39,10 @@ def verify_password(plain: str, hashed: str) -> bool:
 # ---------------------------------------------------------------------------
 
 def _fernet(settings=None) -> Fernet:
-    from app.config import get_settings
+    from app.config import _require, get_settings
     s = settings or get_settings()
-    if not s.MFA_ENC_KEY:
-        raise RuntimeError(
-            "MFA_ENC_KEY is not set. Generate one with: "
-            "python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
-        )
-    return Fernet(s.MFA_ENC_KEY.encode())
+    key = _require(s.MFA_ENC_KEY, "MFA_ENC_KEY")
+    return Fernet(key.encode())
 
 
 def encrypt_totp_secret(plain: str) -> str:

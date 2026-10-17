@@ -347,3 +347,96 @@ def test_403_wrong_role(auth_client: TestClient, auth_db: Session):
 
     r3 = auth_client.get("/students", follow_redirects=False)
     assert r3.status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# Test: startup guard raises clearly when MFA_ENC_KEY is missing
+# ---------------------------------------------------------------------------
+
+def test_missing_mfa_enc_key_raises_clearly():
+    """_require() raises RuntimeError with a clear message when key is empty."""
+    from app.config import _require
+    try:
+        _require("", "MFA_ENC_KEY")
+        assert False, "_require should have raised RuntimeError"
+    except RuntimeError as e:
+        msg = str(e)
+        assert "MFA_ENC_KEY" in msg
+        assert ".env" in msg
+
+
+def test_missing_session_secret_raises_clearly():
+    """_require() raises RuntimeError with a clear message when SESSION_SECRET is empty."""
+    from app.config import _require
+    try:
+        _require("", "SESSION_SECRET")
+        assert False, "_require should have raised RuntimeError"
+    except RuntimeError as e:
+        msg = str(e)
+        assert "SESSION_SECRET" in msg
+        assert ".env" in msg
+
+
+# ---------------------------------------------------------------------------
+# Test: unenrolled user is redirected to /mfa/setup, not /mfa/verify
+# ---------------------------------------------------------------------------
+
+def test_unenrolled_user_goes_to_mfa_setup(auth_client: TestClient, auth_db: Session):
+    """A user with mfa_enabled=False is sent to /mfa/setup after correct password."""
+    import re
+
+    # Create a staff user WITHOUT MFA enrolled
+    user = UserAccount(
+        provider="local",
+        provider_subject="newstaff@onyx.demo",
+        display_name="New Staff",
+        email="newstaff@onyx.demo",
+        active=True,
+    )
+    auth_db.add(user)
+    auth_db.flush()
+
+    from app.models import Role
+    staff_role = auth_db.query(Role).filter_by(name="Staff").first()
+    cred = LocalCredential(
+        user_account_id=user.id,
+        password_hash=hash_password("NewStaff2026!"),
+        mfa_enabled=False,       # <-- not enrolled
+        totp_secret_encrypted=None,
+        recovery_codes_hash=[],
+        failed_logins=0,
+    )
+    auth_db.add(cred)
+    if staff_role:
+        auth_db.add(UserRole(user_account_id=user.id, role_id=staff_role.id))
+    auth_db.commit()
+
+    # POST /login with correct password
+    r = auth_client.get("/login")
+    csrf = re.search(r'name="csrf_token"\s+value="([^"]+)"', r.text).group(1)
+    r2 = auth_client.post(
+        "/login",
+        data={"email": "newstaff@onyx.demo", "password": "NewStaff2026!", "csrf_token": csrf},
+        follow_redirects=False,
+    )
+    assert r2.status_code == 303
+    assert "/mfa/setup" in r2.headers.get("location", ""), (
+        f"Expected redirect to /mfa/setup, got {r2.headers.get('location')}"
+    )
+
+    # GET /mfa/setup should return 200 with QR code
+    r3 = auth_client.get("/mfa/setup")
+    assert r3.status_code == 200
+    assert "Set up" in r3.text
+    assert "data:image/png;base64," in r3.text
+
+    # Sign In button should NOT appear on /mfa/setup
+    assert 'href="/login"' not in r3.text or "Sign in" not in r3.text
+
+
+def test_login_page_has_no_sign_in_button_in_topbar(auth_client: TestClient):
+    """The 'Sign in' button in the topbar must be hidden on /login."""
+    r = auth_client.get("/login")
+    assert r.status_code == 200
+    # The topbar_right block is empty — the topbar-signin anchor must not appear
+    assert 'class="btn btn-primary btn-sm topbar-signin"' not in r.text

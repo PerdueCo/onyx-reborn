@@ -11,6 +11,15 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from app.config import _require, get_settings as _get_settings
+
+# Guard: fail fast before touching the DB if secrets are missing.
+# This is the most common reason reset_db.py produces a "code didn't work"
+# symptom — a new Fernet key was generated silently at import time.
+_s = _get_settings()
+_require(_s.SESSION_SECRET, "SESSION_SECRET")
+_require(_s.MFA_ENC_KEY, "MFA_ENC_KEY")
+
 import app.models  # noqa: F401 — registers all ORM classes
 from app.db import Base, engine
 from app.models import (
