@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 
-{% if student %}
-  {% block title %}Edit {{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% endblock %}
-{% else %}
-  {% block title %}Add Student — Onyx Reborn{% endblock %}
-{% endif %}
+{% block title %}{% if student %}Edit {{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% else %}Add Student — Onyx Reborn{% endif %}{% endblock %}
 {% set active_page = "students" %}
 
 {% block content %}
@@ -52,16 +48,17 @@
 
 <!-- Macros to get current field value (edit: from model; error re-show: from vals) -->
 {% macro fval(name, default="") %}
-  {%- if vals and vals[name] is defined -%}
+  {%- if vals and vals[name] is defined and vals[name] != "" -%}
     {{ vals[name] }}
-  {%- elif student and student[name] is defined -%}
-    {{ student[name] or default }}
+  {%- elif student -%}
+    {{ student | attr(name) if student | attr(name) is not none else default }}
   {%- else -%}
     {{ default }}
   {%- endif -%}
 {% endmacro %}
 
 <form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
   <!-- Required fields -->
   <div class="card" style="margin-bottom:1rem">
     <div class="card-header"><span class="card-title">Name &amp; Program</span></div>

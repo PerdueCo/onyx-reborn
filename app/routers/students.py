@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app import audit
 from app.db import get_db
 from app.models import Employer, Employment, Program, Student, UserAccount
-from app.security import get_user_permissions, require_permission
+from app.security import check_csrf, get_user_permissions, require_permission
 from app.templates_env import templates
 
 router = APIRouter(prefix="/students", tags=["students"])
@@ -64,6 +64,7 @@ def _validate_form(
     first_name: str,
     last_name: str,
     home_phone: str,
+    work_phone: str = "",
 ) -> list[str]:
     """Return a list of error messages (empty = valid)."""
     errors = []
@@ -73,6 +74,8 @@ def _validate_form(
         errors.append("Last name is required.")
     if home_phone and not _phone_ok(home_phone):
         errors.append("Home phone must be in (555) 555-0101 format.")
+    if work_phone and not _phone_ok(work_phone):
+        errors.append("Work phone must be in (555) 555-0101 format.")
     return errors
 
 
@@ -148,6 +151,7 @@ async def student_new_form(
 @router.post("/new", response_class=HTMLResponse)
 async def student_new_save(
     request: Request,
+    csrf_token: str = Form(""),
     first_name: str = Form(""),
     last_name: str = Form(""),
     program_id: str = Form(""),
@@ -165,6 +169,7 @@ async def student_new_save(
     current_user: UserAccount = Depends(_manage_dep),
     db: Session = Depends(get_db),
 ):
+    check_csrf(request, csrf_token)
     _seed_programs(db)
     programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
     vals = {
@@ -175,7 +180,7 @@ async def student_new_save(
         "high_school": high_school, "seeking_employment": seeking_employment,
         "desired_job": desired_job,
     }
-    errors = _validate_form(first_name, last_name, home_phone)
+    errors = _validate_form(first_name, last_name, home_phone, work_phone)
 
     # Duplicate check
     duplicate = None
@@ -265,6 +270,7 @@ async def student_edit_form(
 async def student_edit_save(
     student_id: int,
     request: Request,
+    csrf_token: str = Form(""),
     first_name: str = Form(""),
     last_name: str = Form(""),
     program_id: str = Form(""),
@@ -282,6 +288,7 @@ async def student_edit_save(
     current_user: UserAccount = Depends(_manage_dep),
     db: Session = Depends(get_db),
 ):
+    check_csrf(request, csrf_token)
     student = db.get(Student, student_id)
     if student is None:
         return HTMLResponse("Student not found", status_code=404)
@@ -295,7 +302,7 @@ async def student_edit_save(
         "high_school": high_school, "seeking_employment": seeking_employment,
         "desired_job": desired_job,
     }
-    errors = _validate_form(first_name, last_name, home_phone)
+    errors = _validate_form(first_name, last_name, home_phone, work_phone)
 
     # Duplicate check (exclude this student)
     duplicate = None
