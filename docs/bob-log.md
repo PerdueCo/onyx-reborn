@@ -230,3 +230,49 @@ Copy the template for each session (newest at the bottom).
   + type), `c7ad9f3` (checklist lines added).
 - **Next item:** Day 1 Mon Oct 13 — Students list + search + add + edit (acceptance checks
   1 and 4); then 1998 importer; then demo seed with ~250 fictional students.
+
+---
+
+### 2026-10-11 — Step 3 (legacy import + demo data)
+
+- **Items finished:**
+  1. `app/services/legacy_import.py` — full spec §5 implementation: cp1252 decode,
+     fixed-width field parsing with module-level assert guards (357 / 238 bytes),
+     SS_Number read-and-discard, Month/Day discarded (D-20), YesNo Y/N/0/1 mapping,
+     2-digit year pivot, Amount→Decimal, employer upsert by legacy_code,
+     start_date=enrolled_date (D-21), job_type='unknown' (D-22), idempotent
+     (first+last+home_phone+legacy_source guard), audit event written.
+  2. `scripts/seed_demo.py` — 250 fictional students across 5 programs, 12 demo
+     employers (including dashboard-mockup names), 183 jobs: 17 students with 2
+     concurrent jobs (34 rows), 99 single current, 50 single ended, 40 seeking.
+     Idempotent via DEMO_SEED marker employer. RNG seeded deterministically.
+  3. `scripts/reset_db.py` — one-command reset: deletes SQLite file (disposing
+     engine first to release Windows lock), runs `alembic upgrade head`, seeds
+     roles, imports 1998 data, seeds demo, creates 2 demo users, prints sign-in
+     credentials.
+  4. `tests/test_import.py` — 11 tests: width sums, 5+5 import, 5 jobs, idempotent,
+     no SSN in DB, enrolled_date parsed, YesNo mapped, job_type=unknown, start_date
+     equals enrolled_date, audit event written.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Run-sheet step 3: 1998 import + demo data. First, in 3 lines max, tell me which
+    step-2 Students items are missing. Then build: 1. legacy_import.py … 2. seed_demo.py
+    … 3. reset_db.py … Tests: widths sum to 357/238; 5+5 imported; run twice adds nothing;
+    no SSN digits in DB. Run pytest, run reset_db.py, commit, push."
+- **What Bob did well:** Read all 5 legacy data records and both file layouts before
+  writing a single line; confirmed field widths sum correctly; caught Windows file-lock
+  issue on reset_db.py and fixed with engine.dispose() + retry.
+- **Where I corrected it:** No corrections from Clarence in this session.
+- **Problems + fixes:**
+  - `reset_db.py` first run failed with `PermissionError: [WinError 32]` because
+    pytest's TestClient held an open handle to `onyx.db`. Fixed by calling
+    `engine.dispose()` before deleting the file, with a 5-attempt retry loop.
+  - `print()` with Unicode box-drawing chars raised `UnicodeEncodeError` on Windows
+    PowerShell (cp1252 codec). Replaced with ASCII dashes.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **36 passed**, 0 failed (11 new import tests + 25 existing).
+- **Commit ID:** `efedd26`
+- **DB totals after reset_db.py:**
+  - **255 students** (5 legacy + 250 demo)
+  - **188 jobs** (5 legacy + 183 demo)
+- **Next item:** Day 1 Students list + search + add + edit (checklist item still open).

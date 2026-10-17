@@ -23,9 +23,10 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 ## Day 1 — Mon Oct 13: Students + 1998 importer (~4 hrs)
 
 - [ ] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4)
-- [ ] [Code] `app/services/legacy_import.py` — fixed-width parser per spec §5; drops SSN + birth data; `start_date` inferred from enrolled_date (D-21); idempotent on re-run; tests (widths, 5+5 rows, no SSN in DB)
-- [ ] [Code] `scripts/seed.py` — runs importer on test pack + inserts ~250 fictional students + creates 3 demo users (admin / staff / student linked to an imported student)
-- [ ] [Ask] Bob explains the fixed-width record layout from `MAIN.BAS` back to Clarence before coding the importer
+- [x] [Code] `app/services/legacy_import.py` — fixed-width parser per spec §5; drops SSN + birth data; `start_date` inferred from enrolled_date (D-21); idempotent on re-run; tests (widths, 5+5 rows, no SSN in DB)
+- [x] [Code] `scripts/seed_demo.py` — ~250 fictional students, ~12 employers, ~183 jobs (17 dual-current, ~40 seeking); idempotent; never touches legacy rows
+- [x] [Code] `scripts/reset_db.py` — drop → migrate → seed roles → import 1998 → seed demo → two demo users; prints credentials
+- [x] [Ask] Bob explains the fixed-width record layout from `MAIN.BAS` back to Clarence before coding the importer
 
 ---
 
