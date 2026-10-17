@@ -375,3 +375,46 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Next item:** Day 3 — Employers list + add + edit (name, address, city, state,
   phone — D-06 bug fixed); add job / end job on student detail page; `kpis.py` real
   counts; dashboard KPI cards wired to DB; recent activity feed.
+
+---
+
+### 2026-10-16 — Step 2 fix (students CRUD fully working)
+
+- **Items finished:**
+  1. **CSRF missing from student forms** — `students/form.html` had no `<input type="hidden" name="csrf_token">`,
+     so every POST from `/students/new` and `/students/{id}/edit` was rejected with 403. Fixed by
+     adding the hidden field and calling `check_csrf()` at the top of both POST handlers.
+  2. **Jinja2 `fval` macro broken for ORM objects** — `student[name]` uses `__getitem__` which
+     SQLAlchemy ORM objects don't implement; silently fell through to the `else` branch, so
+     edit forms showed blank fields for every value. Fixed by replacing with `student | attr(name)`.
+  3. **`block title` defined twice** — the original template used `{% if student %}{% block title %}…{% endif %}`
+     pattern, which Jinja2 forbids (a block can only appear once). Caused `TemplateAssertionError`
+     on every request to `/students/new` or `/students/{id}/edit`. Fixed by collapsing to a single
+     inline `{% block title %}{% if student %}…{% else %}…{% endif %}{% endblock %}`.
+  4. **`work_phone` format not validated** — `_validate_form` checked `home_phone` but not
+     `work_phone`. Added the check.
+  5. **`tests/test_students.py`** — 12 new end-to-end tests through HTTP signed-in client:
+     auth-redirect guard, new form renders (csrf + fields), create → 303, created student listed,
+     find by STU number, edit form shows existing values, edit saves + STU unchanged, missing first
+     name rejected (422 + values kept), missing last name rejected, bad phone rejected, detail page
+     renders, duplicate warning shown.
+  6. `scripts/_check_student_pages.py` — standalone smoke-check script used to verify the running
+     app (confirmed all 10 checks OK on the live server via TestClient).
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Step 2 is NOT complete … Fix and finish per RUN-SHEET step 2 … CSRF token on POST forms …
+    Test it end to end … Run pytest, commit, push."
+- **What Bob did well:** Diagnosed all four root causes from code inspection before running anything;
+  fixed them in a single pass.
+- **Where I corrected it:** Clarence stopped the stuck uvicorn polling loop and directed Bob to
+  use the already-running server on port 8000.
+- **Problems + fixes:**
+  - `TemplateAssertionError: block 'title' defined twice` — pre-existing bug exposed when tests
+    actually exercised the templates (previous session only hit auth routes). Fixed inline.
+  - Uvicorn `Start-Process` via PowerShell exited immediately with empty log — PowerShell
+    pipeline kills the child when the parent exits. Worked around by using TestClient directly.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **48 passed**, 0 failed (12 new student tests + 36 existing).
+- **Commit ID:** `9fbd79c`
+- **Next item:** Day 3 — Employers list + add + edit; add job / end job; `kpis.py` real counts;
+  dashboard KPI cards wired to DB.

@@ -22,7 +22,7 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 ## Day 1 — Mon Oct 13: Students + 1998 importer (~4 hrs)
 
-- [x] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4) (commit `acb986e`)
+- [x] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4) (commit `acb986e`, fixed commit `9fbd79c`)
 - [x] [Code] `app/services/legacy_import.py` — fixed-width parser per spec §5; drops SSN + birth data; `start_date` inferred from enrolled_date (D-21); idempotent on re-run; tests (widths, 5+5 rows, no SSN in DB)
 - [x] [Code] `scripts/seed_demo.py` — ~250 fictional students, ~12 employers, ~183 jobs (17 dual-current, ~40 seeking); idempotent; never touches legacy rows
 - [x] [Code] `scripts/reset_db.py` — drop → migrate → seed roles → import 1998 → seed demo → two demo users; prints credentials
