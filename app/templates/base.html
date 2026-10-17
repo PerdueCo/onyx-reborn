@@ -95,7 +95,7 @@
           <div class="user-avatar" aria-hidden="true">{{ current_user.display_name[:2]|upper if current_user.display_name else "??" }}</div>
           <span class="user-name">{{ current_user.display_name or current_user.email or "User" }}</span>
           <form method="post" action="/logout" style="display:inline;margin-left:8px">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) if csrf_token is defined else '' }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
             <button type="submit" class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:12px">Sign out</button>
           </form>
         {% else %}

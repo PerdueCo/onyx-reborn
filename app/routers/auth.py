@@ -12,7 +12,6 @@ import pyotp
 import qrcode
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import audit
@@ -32,10 +31,9 @@ from app.security import (
     verify_recovery_code,
     verify_totp,
 )
+from app.templates_env import templates
 
 router = APIRouter(tags=["auth"])
-templates = Jinja2Templates(directory="app/templates")
-
 _LOCKOUT_THRESHOLD = 5
 _LOCKOUT_MINUTES = 15
 
@@ -321,7 +319,9 @@ async def mfa_verify_post(
     idx = verify_recovery_code(plain_code, hashes)
     if idx is not None:
         hashes.pop(idx)
-        cred.recovery_codes_hash = list(hashes)  # trigger JSON column update
+        from sqlalchemy.orm.attributes import flag_modified
+        cred.recovery_codes_hash = list(hashes)
+        flag_modified(cred, "recovery_codes_hash")
         db.commit()
         request.session["mfa_ok"] = True
         request.session["last_active"] = datetime.datetime.utcnow().isoformat()

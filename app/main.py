@@ -3,8 +3,9 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
+
+from app.templates_env import templates as _templates
 
 from app.config import get_settings
 from app.routers import public as public_router
@@ -35,12 +36,10 @@ app.include_router(dashboard_router.router)
 app.include_router(students_router.router)
 
 # ---------------------------------------------------------------------------
-# Jinja2 globals
+# Jinja2 globals — registered on the single shared Environment
 # ---------------------------------------------------------------------------
 
-_templates = Jinja2Templates(directory="app/templates")
-
-# Make csrf_token() callable inside all templates as {{ csrf_token(request) }}
+# Register csrf_token so every template can call {{ csrf_token(request) }}
 from app.security import csrf_token as _csrf_token_fn  # noqa: E402
 _templates.env.globals["csrf_token"] = _csrf_token_fn
 

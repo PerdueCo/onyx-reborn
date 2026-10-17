@@ -3,17 +3,15 @@ import re
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app import audit
 from app.db import get_db
 from app.models import Employer, Employment, Program, Student, UserAccount
 from app.security import get_user_permissions, require_permission
+from app.templates_env import templates
 
 router = APIRouter(prefix="/students", tags=["students"])
-templates = Jinja2Templates(directory="app/templates")
-
 _read_dep = require_permission("students.read")
 _manage_dep = require_permission("students.manage")
 
