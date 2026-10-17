@@ -1,158 +1,216 @@
-"""reset_db.py — wipe and re-seed the database with demo accounts.
+"""reset_db.py — full database reset: drop → migrate → seed roles →
+import 1998 data → seed demo → create two demo users.
 
-Run this before a demo to get a clean DB with known credentials.
-Only creates demo users when DEMO_MODE=true (the default in .env).
+Prints sign-in details for both demo accounts at the end.
 
 Usage:
     .venv\\Scripts\\python.exe scripts/reset_db.py
+
+WARNING: This destroys all data in the configured DATABASE_URL.
+         Do NOT run against a production database.
 """
-import os
+from __future__ import annotations
+
+import subprocess
 import sys
+import os
+import uuid
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.config import _require, get_settings as _get_settings
-
-# Guard: fail fast before touching the DB if secrets are missing.
-# This is the most common reason reset_db.py produces a "code didn't work"
-# symptom — a new Fernet key was generated silently at import time.
-_s = _get_settings()
-_require(_s.SESSION_SECRET, "SESSION_SECRET")
-_require(_s.MFA_ENC_KEY, "MFA_ENC_KEY")
-
-import app.models  # noqa: F401 — registers all ORM classes
-from app.db import Base, engine
-from app.models import (
-    LocalCredential,
-    Permission,
-    Program,
-    Role,
-    RolePermission,
-    UserAccount,
-    UserRole,
-)
-from app.security import encrypt_totp_secret, hash_password
-from scripts.seed_roles import seed as seed_roles
-from sqlalchemy.orm import Session
-
 # ---------------------------------------------------------------------------
-# Known demo credentials (printed to stdout for judges)
+# Demo user constants  (also used by tests/test_auth.py)
 # ---------------------------------------------------------------------------
 
-DEMO_USERS = [
-    {
-        "email": "admin@onyx.demo",
-        "display_name": "Demo Admin",
-        "password": "OnyxAdmin2026!",
-        "totp_secret": "JBSWY3DPEHPK3PXP",   # well-known test secret
-        "role": "Administrator",
-    },
-    {
-        "email": "staff@onyx.demo",
-        "display_name": "Demo Staff",
-        "password": "OnyxStaff2026!",
-        "totp_secret": "JBSWY3DPEHPK3PXQ",   # well-known test secret
-        "role": "Staff",
-    },
-]
+ADMIN_EMAIL        = "admin@onyx.demo"
+ADMIN_PASSWORD     = "OnyxAdmin2026!"
+ADMIN_TOTP_SECRET  = "JBSWY3DPEHPK3PXP"
+ADMIN_DISPLAY_NAME = "Demo Admin"
 
-PROGRAMS = [
-    ("CIS101", "Computer Information Systems"),
-    ("ACC110", "Accounting"),
-    ("BUS201", "Business Administration"),
-    ("MKT130", "Marketing"),
-    ("OFT120", "Office Technology"),
-]
+STAFF_EMAIL        = "staff@onyx.demo"
+STAFF_PASSWORD     = "OnyxStaff2026!"
+STAFF_TOTP_SECRET  = "JBSWY3DPEHPK3PXQ"
+STAFF_DISPLAY_NAME = "Demo Staff"
 
 
-def reset(demo_mode: bool = True) -> None:
-    print("Dropping all tables…")
-    Base.metadata.drop_all(engine)
-    print("Creating all tables…")
-    Base.metadata.create_all(engine)
+# ---------------------------------------------------------------------------
+# Step helpers
+# ---------------------------------------------------------------------------
 
-    with Session(engine) as session:
-        # Roles + permissions
-        seed_roles(session)
-
-        # Programs
-        for code, name in PROGRAMS:
-            if not session.query(Program).filter_by(code=code).first():
-                session.add(Program(code=code, name=name, active=True))
-        session.commit()
-        print(f"Seeded {len(PROGRAMS)} programs.")
-
-        if demo_mode:
-            _create_demo_users(session)
-        else:
-            print("DEMO_MODE=false — skipping demo user creation.")
+def _step(msg: str) -> None:
+    print(f"\n{'='*60}")
+    print(f"  {msg}")
+    print(f"{'='*60}")
 
 
-def _create_demo_users(session: Session) -> None:
-    print()
-    print("─" * 57)
-    print("  Onyx Reborn demo accounts")
-    print("─" * 57)
+def _drop_and_migrate() -> None:
+    """Drop all tables via Alembic down to base, then upgrade to head."""
+    _step("1 / 5  Dropping all tables and re-running migrations")
 
-    for spec in DEMO_USERS:
-        role_obj = session.query(Role).filter_by(name=spec["role"]).first()
-        if not role_obj:
-            print(f"  WARNING: role '{spec['role']}' not found — skipping {spec['email']}")
-            continue
+    # alembic downgrade clears tables; stamp base then upgrade is safer
+    # For SQLite we simply delete the file and re-migrate.
+    from app.config import get_settings
+    settings = get_settings()
+    url = settings.DATABASE_URL
+
+    if url.startswith("sqlite:///"):
+        db_path = url.replace("sqlite:///", "").replace("/", os.sep)
+        # Dispose the engine so Windows releases the file lock
+        try:
+            from app.db import engine as _engine
+            _engine.dispose()
+        except Exception:
+            pass
+        import time
+        for attempt in range(5):
+            try:
+                if os.path.exists(db_path):
+                    os.remove(db_path)
+                    print(f"  Deleted {db_path}")
+                break
+            except PermissionError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.5)
+        # Also remove WAL/SHM if present
+        for suffix in ["-wal", "-shm"]:
+            p = db_path + suffix
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except PermissionError:
+                    pass
+    else:
+        # PostgreSQL: drop all via alembic downgrade
+        result = subprocess.run(
+            [sys.executable, "-m", "alembic", "downgrade", "base"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            print(result.stderr)
+            sys.exit(1)
+
+    # Run migrations
+    result = subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(result.stdout)
+        print(result.stderr)
+        sys.exit(1)
+    print("  Migrations applied.")
+
+
+def _seed_roles(session) -> None:
+    _step("2 / 5  Seeding roles and permissions")
+    from scripts.seed_roles import seed
+    seed(session)
+
+
+def _run_legacy_import(session) -> None:
+    _step("3 / 5  Importing 1998 legacy data")
+    from app.services.legacy_import import run_import
+    result = run_import(session)
+    print(
+        f"  Students created: {result['students_created']}"
+        f"  (skipped: {result['students_skipped']})"
+    )
+    print(f"  Employers created: {result['employers_created']}")
+    print(f"  Jobs created:      {result['jobs_created']}")
+    print(f"  SSNs discarded:    {result['ssn_count']}")
+
+
+def _seed_demo(session) -> None:
+    _step("4 / 5  Seeding demo students and jobs")
+    from scripts.seed_demo import seed
+    seed(session)
+
+
+def _create_demo_users(session) -> None:
+    _step("5 / 5  Creating demo user accounts")
+    from app.models import LocalCredential, Role, UserAccount, UserRole
+    from app.security import hash_password, encrypt_totp_secret
+
+    def _make_user(email, display_name, password, totp_secret, role_name):
+        existing = session.query(UserAccount).filter_by(email=email).first()
+        if existing:
+            print(f"  {email} already exists — skipping.")
+            return
 
         user = UserAccount(
             provider="local",
-            provider_subject=spec["email"],
-            display_name=spec["display_name"],
-            email=spec["email"],
+            provider_subject=str(uuid.uuid4()),
+            display_name=display_name,
+            email=email,
             active=True,
         )
         session.add(user)
         session.flush()
 
-        # Encrypt TOTP secret using the MFA_ENC_KEY from settings
-        enc_secret = encrypt_totp_secret(spec["totp_secret"])
-        _, hashed_codes = _empty_recovery_codes()
-
         cred = LocalCredential(
             user_account_id=user.id,
-            password_hash=hash_password(spec["password"]),
-            totp_secret_encrypted=enc_secret,
+            password_hash=hash_password(password),
+            totp_secret_encrypted=encrypt_totp_secret(totp_secret),
             mfa_enabled=True,
-            recovery_codes_hash=hashed_codes,
+            recovery_codes_hash=[],
             failed_logins=0,
         )
         session.add(cred)
 
-        # Assign role
-        session.add(UserRole(user_account_id=user.id, role_id=role_obj.id))
+        role = session.query(Role).filter_by(name=role_name).first()
+        if role:
+            session.add(UserRole(user_account_id=user.id, role_id=role.id))
+
         session.flush()
+        print(f"  Created {role_name} account: {email}")
 
-        print(f"  {spec['email']}")
-        print(f"    password   : {spec['password']}")
-        print(f"    TOTP secret: {spec['totp_secret']}")
-        print(f"    role       : {spec['role']}")
-        print()
-
+    _make_user(ADMIN_EMAIL, ADMIN_DISPLAY_NAME, ADMIN_PASSWORD, ADMIN_TOTP_SECRET, "Administrator")
+    _make_user(STAFF_EMAIL, STAFF_DISPLAY_NAME, STAFF_PASSWORD, STAFF_TOTP_SECRET, "Staff")
     session.commit()
-    print("─" * 57)
-    print("  Add the TOTP secret to Google/Microsoft Authenticator")
-    print("  or any TOTP app using 'Enter setup key'.")
-    print("─" * 57)
+
+
+def _print_summary(session) -> None:
+    from app.models import Employment, Student
+    total_students = session.query(Student).count()
+    total_jobs     = session.query(Employment).count()
+    print("\n" + "="*60)
+    print("  RESET COMPLETE")
+    print("="*60)
+    print(f"  Total students : {total_students}")
+    print(f"  Total jobs     : {total_jobs}")
+    print()
+    print("  " + "-"*55)
+    print("  DEMO SIGN-IN CREDENTIALS")
+    print("  " + "-"*55)
+    print(f"  Admin   email : {ADMIN_EMAIL}")
+    print(f"          pass  : {ADMIN_PASSWORD}")
+    print(f"          TOTP  : {ADMIN_TOTP_SECRET}")
+    print("  " + "-"*55)
+    print(f"  Staff   email : {STAFF_EMAIL}")
+    print(f"          pass  : {STAFF_PASSWORD}")
+    print(f"          TOTP  : {STAFF_TOTP_SECRET}")
+    print("  " + "-"*55)
+    print()
+    print("  Scan TOTP secret with an authenticator app,")
+    print("  or use: pyotp.TOTP('<secret>').now()")
     print()
 
 
-def _empty_recovery_codes() -> tuple[list[str], list[str]]:
-    """Return (plaintext, hashes) for 8 recovery codes.
-
-    For the demo reset we generate real codes so judges can use them.
-    The plaintext is printed separately if needed; here we just need hashes.
-    """
-    from app.security import generate_recovery_codes
-    return generate_recovery_codes()
-
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    from app.config import get_settings
-    settings = get_settings()
-    reset(demo_mode=settings.DEMO_MODE)
+    _drop_and_migrate()
+
+    # Import engine/session after migrations so tables exist
+    from app.db import engine
+    from sqlalchemy.orm import Session
+
+    with Session(engine) as session:
+        _seed_roles(session)
+        _run_legacy_import(session)
+        _seed_demo(session)
+        _create_demo_users(session)
+        _print_summary(session)
