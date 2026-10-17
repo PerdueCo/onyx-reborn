@@ -22,7 +22,7 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 ## Day 1 — Mon Oct 13: Students + 1998 importer (~4 hrs)
 
-- [ ] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4)
+- [x] [Code] Students list + search (name or STU number), add form, edit form; STU number `STU-####` generated and immutable; required-field validation; tests (acceptance checks 1 and 4) (commit `acb986e`)
 - [x] [Code] `app/services/legacy_import.py` — fixed-width parser per spec §5; drops SSN + birth data; `start_date` inferred from enrolled_date (D-21); idempotent on re-run; tests (widths, 5+5 rows, no SSN in DB)
 - [x] [Code] `scripts/seed_demo.py` — ~250 fictional students, ~12 employers, ~183 jobs (17 dual-current, ~40 seeking); idempotent; never touches legacy rows
 - [x] [Code] `scripts/reset_db.py` — drop → migrate → seed roles → import 1998 → seed demo → two demo users; prints credentials
@@ -32,12 +32,12 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 ## Day 2 — Tue Oct 14: Sign-in + 2-step TOTP + roles (~4 hrs)
 
-- [ ] [Code] Login, logout, password hashing (bcrypt), lockout after 5 fails, generic error message (PRD §2)
-- [ ] [Code] Session cookie (30-min timeout); CSRF token on all POST forms
-- [ ] [Code] TOTP 2-step verify screen (pyotp); MFA setup flow (QR code + 8 recovery codes) using `local_credential` (D-17/D-18); `TOTP_REQUIRED=true` env flag
-- [ ] [Code] `require_permission` FastAPI dependency; sidebar items filtered by role; 403 page
-- [ ] [Code] Audit log writes: sign-in ok, sign-in failed, access denied
-- [ ] Tests: login ok / wrong password / lockout / TOTP correct / TOTP wrong
+- [x] [Code] Login, logout, password hashing (bcrypt), lockout after 5 fails, generic error message (PRD §2) (commit `acb986e`)
+- [x] [Code] Session cookie (30-min timeout); CSRF token on all POST forms (commit `acb986e`)
+- [x] [Code] TOTP 2-step verify screen (pyotp); MFA setup flow (QR code + 8 recovery codes) using `local_credential` (D-17/D-18) (commit `acb986e`)
+- [x] [Code] `require_permission` FastAPI dependency; sidebar items filtered by role; 403 page (commit `ae750f7`)
+- [x] [Code] Audit log writes: sign-in ok, sign-in failed, access denied (commit `acb986e`)
+- [x] Tests: login ok / wrong password / lockout / TOTP correct / TOTP wrong (14 tests — commits `0e7781e`, `e6095f0`, 25 passed total)
 
 ---
 
