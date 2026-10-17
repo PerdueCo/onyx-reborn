@@ -418,3 +418,58 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `9fbd79c`
 - **Next item:** Day 3 — Employers list + add + edit; add job / end job; `kpis.py` real counts;
   dashboard KPI cards wired to DB.
+
+
+---
+
+### 2026-10-16 — Demo sign-in helpers (judge-friendly UX)
+
+- **Items finished:**
+  1. **`app/templates/auth/login.html`** — replaced static plaintext demo-accounts box
+     with a "Try the demo" card containing two real POST forms: "Try as Staff" and
+     "Try as Administrator". Each form includes a `csrf_token` hidden field (same
+     token generated for the page), hidden `email`/`password` fields, and a
+     `btn-secondary` button. Shown only when `demo_mode=True`; absent when `False`.
+  2. **`app/routers/auth.py`** — `get_settings` and all reset_db constants
+     (`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `STAFF_EMAIL`, `STAFF_PASSWORD`,
+     `ADMIN_TOTP_SECRET`, `STAFF_TOTP_SECRET`) promoted to module-level imports
+     (were per-call `from … import` inside functions). `GET /login` now passes
+     `demo_admin_*` / `demo_staff_*` context vars. `GET /mfa/verify` computes a live
+     `pyotp.TOTP(secret).now()` code for admin/staff demo users only, passes it as
+     `demo_code`.
+  3. **`app/templates/auth/mfa_verify.html`** — added `{% if demo_code %}` block that
+     shows a "Demo account — current code: NNN NNN" box and a second POST form with a
+     "Use demo code" button pre-filled with the live code. Absent for all other users
+     and when `DEMO_MODE=False`.
+  4. **`scripts/reset_db.py`** — added `NEWSTAFF_EMAIL = "newstaff@onyx.demo"`,
+     `NEWSTAFF_PASSWORD = "OnyxNew2026!"`, `NEWSTAFF_DISPLAY_NAME = "New Staff"`.
+     `_create_demo_users` now creates this third user with `totp_secret=None` and
+     `mfa_enabled=False`, so first sign-in sends the QR setup page. `_make_user`
+     helper updated to conditionalize `encrypt_totp_secret` on whether a secret
+     was provided. Summary printout updated.
+  5. **`tests/test_demo_mode.py`** — 12 new tests: demo box present/absent,
+     csrf count ≥ 3, staff/admin button posts correct credentials, MFA hint shown for
+     admin (code verifies with pyotp valid_window=2), MFA hint shown for staff, hint
+     absent when `DEMO_MODE=False`, hint absent for non-demo users, newstaff redirects
+     to `/mfa/setup`, `/mfa/setup` shows QR, constants importable.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Bob crashed mid-task. Run git status and git diff --stat first and tell me in 3
+    lines what is already done. Then finish this task: Judge-friendly demo sign-in …
+    Run pytest, commit, push."
+- **What Bob did well:** Recognised clean state from `git status`, understood full
+  scope immediately, promoted imports to module level to fix `patch()` target, all 12
+  tests green on second run (first run failed because `get_settings` was a local
+  import so `patch("app.routers.auth.get_settings")` raised `AttributeError`).
+- **Where I corrected it:** No corrections from Clarence; Bob self-corrected the patch
+  target error after first pytest run.
+- **Problems + fixes:**
+  - First pytest run: 7 of 12 tests failed with
+    `AttributeError: module 'app.routers.auth' does not have attribute 'get_settings'`
+    because the function did `from app.config import get_settings` inside the route
+    body. Fixed by moving the import to module level.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **60 passed**, 0 failed (12 new demo tests + 48 existing).
+- **Commit ID:** `fd8614a`
+- **Next item:** Day 3 — Employers list + add + edit; add job / end job; `kpis.py`
+  real counts; dashboard KPI cards wired to DB.
