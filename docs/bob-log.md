@@ -785,3 +785,53 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Next item:** Day 4 — Dockerfile; `.env.example` complete; README.md.
 
 ---
+
+### 2026-10-17 — Bug fix: Demo Seed Marker + escaped HTML dash in employer tables
+
+- **Items finished:**
+  1. **`scripts/seed_demo.py`** — Removed the `[Demo Seed Marker]` sentinel `Employer` row.
+     The marker approach created a real (inactive) DB row that showed up on employer pages
+     before the active filter was added. Idempotency is now guarded by checking for
+     `legacy_code='DEMO001'` (the first real demo employer). No fake record is ever created.
+  2. **`app/routers/employment.py`** — Both employer-listing queries (`GET /employment` overview
+     employers tab and `GET /employment/employers`) now filter `Employer.active == True`.
+     This hides inactive employers (including any legacy ghost rows) from every list and
+     dropdown that staff or a judge might see.
+  3. **`app/templates/employment/employers_list.html`** and
+     **`app/templates/employment/overview.html`** — Replaced the pattern
+     `{{ e.city or '<span class="text-muted">—</span>' }}` with
+     `{{ e.city or '' }}{% if not e.city %}<span class="text-muted">—</span>{% endif %}`.
+     Jinja2 auto-escapes string literals in `{{ }}` expressions, so the old pattern rendered
+     the literal text `&lt;span class=...` instead of a styled dash.
+  4. **`tests/test_employer_display.py`** — 9 new tests:
+     - `test_seed_demo_no_marker_employer` — seed_demo produces no employer named `[Demo Seed Marker]`
+     - `test_seed_demo_no_demo_seed_legacy_code` — seed_demo produces no employer with `legacy_code=DEMO_SEED`
+     - `test_overview_employers_tab_no_escaped_span` — `/employment?tab=employers` contains no `&lt;span`
+     - `test_employers_list_page_no_escaped_span` — `/employment/employers` contains no `&lt;span`
+     - `test_overview_blank_fields_show_dash` — blank city/state/phone shows `—` dash in overview
+     - `test_employers_list_blank_fields_show_dash` — blank fields show `—` on list page
+     - `test_inactive_employer_hidden_from_overview` — inactive employer absent from overview
+     - `test_inactive_employer_hidden_from_list_page` — inactive employer absent from list page
+     - `test_demo_seed_marker_not_in_employer_page` — ghost DEMO_SEED row (inactive) never shown
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Two bugs on /employment?tab=employers: 1. (Demo Seed Marker) appears as an employer.
+    Replace the marker-employer approach in scripts/seed_demo.py with a check that does not
+    create fake records … 2. Empty cells render the literal text <span class=\"text-muted\">—</span>.
+    Fix the template/macro so an empty value shows a gray dash … Tests: employers page has no
+    'Demo Seed Marker' and no '&lt;span' text; an employer with blank fields shows a dash.
+    Run pytest, commit, push."
+- **What Bob did well:** Read all affected files before touching anything; found both template
+  occurrences of the escaped-span bug (employers_list.html and overview.html) in one grep;
+  kept the fix minimal (if-block, not a macro); confirmed the safety-net filter was already
+  absent in 2 of 2 router queries and added it to both; all 9 tests green first run.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:**
+  - `git commit -m "..."` with multi-line message in PowerShell treated newlines as extra file
+    arguments. Worked around by writing the message to `.git_commit_msg.txt` and using `git commit -F`.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **165 passed**, 0 failed (9 new + 156 existing).
+- **Commit ID:** `22a0551`
+- **Next item:** Day 4 — Dockerfile; `.env.example` complete; README.md.
+
+---
