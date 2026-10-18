@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: onyx-reborn
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: MFA_ENC_KEY
+        sync: false

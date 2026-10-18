@@ -1,0 +1,32 @@
+# Never bake secrets or local state into the image
+.env
+.env.*
+
+# SQLite database file — Render uses an ephemeral FS; reset_db.py builds it fresh
+onyx.db
+onyx.db-shm
+onyx.db-wal
+
+# Python virtual environment
+.venv
+venv
+env
+
+# Compiled bytecode
+__pycache__
+*.py[cod]
+
+# Test artifacts
+.pytest_cache
+.coverage
+htmlcov
+
+# Editor / OS
+.vscode
+.idea
+*.DS_Store
+Thumbs.db
+
+# Git history
+.git
+.gitignore

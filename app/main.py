@@ -1,4 +1,6 @@
 """Onyx Reborn — FastAPI application entry point."""
+import sys
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import HTTPException
 from fastapi.responses import HTMLResponse
@@ -19,11 +21,26 @@ from app.routers import admin as admin_router
 settings = get_settings()
 
 # ── Startup guard ────────────────────────────────────────────────────────────
-# Abort immediately with a clear message if required secrets are missing.
-# This prevents the app from booting with a random/empty key and silently
-# encrypting TOTP secrets that can never be decrypted after a restart.
+# Abort immediately with a clear message if required secrets are missing or invalid.
+# This prevents the app from booting with a bad key and silently encrypting TOTP
+# secrets that can never be decrypted after a restart.
 _require(settings.SESSION_SECRET, "SESSION_SECRET")
-_require(settings.MFA_ENC_KEY, "MFA_ENC_KEY")
+_mfa_key = _require(settings.MFA_ENC_KEY, "MFA_ENC_KEY")
+
+# Validate that MFA_ENC_KEY is actually a valid Fernet key (32-byte URL-safe base64).
+# A non-empty but malformed key would otherwise crash deep in cryptography with an
+# unhelpful error message.
+try:
+    from cryptography.fernet import Fernet as _Fernet
+    _Fernet(_mfa_key.encode())
+except Exception as _e:
+    sys.exit(
+        f"\n\n  ✗ MFA_ENC_KEY is set but is NOT a valid Fernet key: {_e}\n"
+        f"  Generate a valid key with:\n"
+        f"    python -c \"from cryptography.fernet import Fernet; "
+        f"print(Fernet.generate_key().decode())\"\n"
+        f"  Then paste it into the MFA_ENC_KEY environment variable.\n"
+    )
 
 app = FastAPI(
     title="Onyx Reborn",
