@@ -64,7 +64,7 @@
       <label class="form-label" for="end_date">End date <span class="required">*</span></label>
       <input class="form-input {% if errors %}input-error{% endif %}"
              id="end_date" name="end_date" type="date" required
-             value="">
+             value="{{ today }}">
     </div>
     <p class="form-hint" style="margin-top:.25rem">
       The employment row will be kept in history. The other jobs for this student are unaffected.

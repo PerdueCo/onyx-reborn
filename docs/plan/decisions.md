@@ -53,5 +53,7 @@ between the two.
 | D-29 | Users and access light | Admin-only `/admin/users` page: list users, Unlock (clear `locked_until`), Reset password (set a temp password), Change role. No create-user UI for MVP; users created by `reset_db.py`. | CONFIRMED |
 | D-30 | 2-step always required | TOTP MFA is always enforced for Admin and Staff; no `TOTP_REQUIRED` flag. Tests generate real TOTP codes via `pyotp.TOTP(secret).now()` from the seeded known secret — no bypass. Demo users created only when `DEMO_MODE=true` (via `reset_db.py`). | CONFIRMED |
 
+| D-31 | Current-job definition for detail page and KPIs | `current = start_date <= today AND (end_date IS NULL OR end_date > today)`. Strict `>` on end_date (a job that ended today is history by end of day). Single `is_current_job(job, today)` helper in `kpis.py` used by both the KPI queries and the student detail router split. | CONFIRMED |
+
 Amends: **D-13** → see D-17/D-18. **D-15** → see D-24. **D-08** confirmed by the schema
 (multiple simultaneous jobs; same employer may repeat).

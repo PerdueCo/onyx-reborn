@@ -10,12 +10,14 @@
     <p class="page-subtitle">{{ student.student_number }}</p>
   </div>
   <div style="display:flex;gap:.5rem">
+    {% if 'students.manage' in user_perms %}
     <a href="/students/{{ student.id }}/edit" class="btn btn-primary">Edit</a>
+    {% endif %}
     <a href="/students" class="btn btn-secondary">All Students</a>
   </div>
 </div>
 
-<!-- Profile card -->
+{# ── Profile card ─────────────────────────────────────────────────── #}
 <div class="card" style="margin-bottom:1rem">
   <div class="card-header">
     <span class="card-title">Profile</span>
@@ -74,46 +76,41 @@
   </dl>
 </div>
 
-<!-- Employment history -->
-<div class="card">
+{# ── Current jobs ──────────────────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1rem">
   <div class="card-header">
-    <span class="card-title">Employment</span>
+    <span class="card-title">Current jobs</span>
+    {% if 'employment.manage' in user_perms %}
     <a href="/employment/new?student_id={{ student.id }}" class="btn btn-secondary btn-sm">Add Job</a>
+    {% endif %}
   </div>
-  {% if jobs %}
+  {% if current_jobs %}
+  <div class="table-wrap">
   <table class="data-table">
     <thead>
       <tr>
         <th>Employer</th>
         <th>Title</th>
         <th>Type</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Hours/wk</th>
+        <th>Rate</th>
+        <th>Started</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      {% for emp, employer in jobs %}
+      {% for emp, employer in current_jobs %}
       <tr>
         <td>{{ employer.name }}</td>
         <td>{{ emp.job_title }}</td>
         <td>
-          <span class="badge badge-{{ emp.job_type }}">
+          <span class="badge badge-current">
             {{ emp.job_type|replace('_', ' ')|capitalize }}
           </span>
         </td>
+        <td>{{ '$%.2f'|format(emp.hourly_rate|float) if emp.hourly_rate else '—' }}</td>
         <td>{{ emp.start_date }}</td>
-        <td>
-          {% if emp.end_date %}
-            {{ emp.end_date }}
-          {% else %}
-            <span class="badge badge-active">Current</span>
-          {% endif %}
-        </td>
-        <td>{{ emp.hours_per_week or '—' }}</td>
         <td style="text-align:right">
-          {% if not emp.end_date and 'employment.manage' in user_perms %}
+          {% if 'employment.manage' in user_perms %}
           <a href="/employment/{{ emp.id }}/end" class="btn btn-secondary btn-sm">End</a>
           {% endif %}
         </td>
@@ -121,10 +118,59 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <div class="empty-state">
-    <p>No employment records yet. <a href="/employment/new?student_id={{ student.id }}">Add a job</a>.</p>
+    <p>No current jobs.
+      {% if 'employment.manage' in user_perms %}
+      <a href="/employment/new?student_id={{ student.id }}">Add a job</a>.
+      {% endif %}
+    </p>
   </div>
   {% endif %}
 </div>
+
+{# ── Job history ──────────────────────────────────────────────────── #}
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Job history</span>
+  </div>
+  {% if history_jobs %}
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Employer</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Rate</th>
+        <th>Start</th>
+        <th>End</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emp, employer in history_jobs %}
+      <tr>
+        <td>{{ employer.name }}</td>
+        <td>{{ emp.job_title }}</td>
+        <td>
+          <span class="badge badge-inactive">
+            {{ emp.job_type|replace('_', ' ')|capitalize }}
+          </span>
+        </td>
+        <td>{{ '$%.2f'|format(emp.hourly_rate|float) if emp.hourly_rate else '—' }}</td>
+        <td>{{ emp.start_date }}</td>
+        <td>{{ emp.end_date or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>No past employment records.</p>
+  </div>
+  {% endif %}
+</div>
+
 {% endblock %}

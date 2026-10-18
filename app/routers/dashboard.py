@@ -5,7 +5,13 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models import UserAccount
 from app.security import get_user_permissions, require_permission
-from app.services.kpis import get_kpis, get_recent_activity, get_security_events
+from app.services.kpis import (
+    get_employment_by_program,
+    get_kpis,
+    get_recent_activity,
+    get_security_events,
+    get_top_employers,
+)
 from app.templates_env import templates
 
 router = APIRouter()
@@ -24,6 +30,8 @@ async def dashboard(
     kpis = get_kpis(db)
     recent_activity = get_recent_activity(db, limit=10)
     security_events = get_security_events(db, limit=10) if is_admin else []
+    program_bars = get_employment_by_program(db)
+    top_employers = get_top_employers(db, limit=5)
 
     return templates.TemplateResponse(
         request,
@@ -35,5 +43,7 @@ async def dashboard(
             "kpis": kpis,
             "recent_activity": recent_activity,
             "security_events": security_events,
+            "program_bars": program_bars,
+            "top_employers": top_employers,
         },
     )

@@ -12,6 +12,9 @@
   </div>
 </div>
 
+{# ── Briefing sentence ────────────────────────────────────────────────── #}
+<p class="dash-briefing">{{ kpis.briefing }}</p>
+
 {# ── KPI row ──────────────────────────────────────────────────────────── #}
 <div class="kpi-row">
 
@@ -42,6 +45,73 @@
 </div>
 {# ── End KPI row ──────────────────────────────────────────────────────── #}
 
+{# ── Charts row ───────────────────────────────────────────────────────── #}
+<div class="dash-grid dash-charts-row">
+
+  {# Employment rate by program — pure CSS bar chart #}
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Employment rate by program</span>
+    </div>
+    {% if program_bars %}
+    <div class="prog-bars" role="list" aria-label="Employment rate by program">
+      {% set max_pct = program_bars[0].pct if program_bars else 100 %}
+      {% for row in program_bars %}
+      <div class="prog-bar-row" role="listitem">
+        <div class="prog-bar-label" title="{{ row.program_name }}">{{ row.program_name }}</div>
+        <div class="prog-bar-track">
+          <div class="prog-bar-fill" style="width:{{ row.pct }}%"
+               aria-valuenow="{{ row.pct }}" aria-valuemin="0" aria-valuemax="100"
+               role="progressbar" aria-label="{{ row.program_name }} {{ row.pct }}%">
+          </div>
+        </div>
+        <div class="prog-bar-stat">
+          <span class="prog-bar-count">{{ row.employed }} of {{ row.total }}</span>
+          <span class="prog-bar-pct badge badge-current">{{ row.pct }}%</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No employment data yet.</p>
+    {% endif %}
+  </div>
+
+  {# Top employers #}
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Top employers</span>
+      <span class="card-subtitle text-muted" style="font-size:12px">by students employed</span>
+    </div>
+    {% if top_employers %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Employer</th>
+          <th>Type</th>
+          <th style="text-align:right">Students</th>
+          <th style="text-align:right">Avg rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for emp in top_employers %}
+        <tr>
+          <td>{{ emp.name }}</td>
+          <td><span class="text-muted" style="font-size:12px">{{ emp.company_type }}</span></td>
+          <td style="text-align:right;font-weight:600">{{ emp.student_count }}</td>
+          <td style="text-align:right">{{ emp.avg_rate }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">No employment data yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+{# ── End charts row ───────────────────────────────────────────────────── #}
+
 {# ── Two-column lower section ─────────────────────────────────────────── #}
 <div class="dash-grid">
 
@@ -55,12 +125,8 @@
       {% for ev in recent_activity %}
       <li class="activity-item">
         <span class="activity-dot activity-dot-{{ ev.event_type.split('_')[0] }}"></span>
-        <div class="activity-body">
-          <span class="activity-actor">{{ ev.actor_name }}</span>
-          <span class="activity-action">{{ ev.event_type | replace("_", " ") }}</span>
-          {% if ev.entity_type and ev.entity_type != "" %}
-          <span class="activity-entity text-muted">· {{ ev.entity_type }}{% if ev.entity_id %} #{{ ev.entity_id }}{% endif %}</span>
-          {% endif %}
+        <div class="activity-body{% if ev.is_security %} activity-security{% endif %}">
+          {{ ev.sentence }}
         </div>
         <time class="activity-time text-muted" datetime="{{ ev.occurred_at.isoformat() if ev.occurred_at }}">
           {{ ev.occurred_at.strftime("%b %d, %H:%M") if ev.occurred_at else "—" }}
@@ -158,9 +224,8 @@
       {% for ev in security_events %}
       <li class="activity-item">
         <span class="activity-dot activity-dot-sign"></span>
-        <div class="activity-body">
-          <span class="activity-actor">{{ ev.actor_name }}</span>
-          <span class="activity-action">{{ ev.event_type | replace("_", " ") }}</span>
+        <div class="activity-body activity-security">
+          {{ ev.sentence }}
         </div>
         <time class="activity-time text-muted" datetime="{{ ev.occurred_at.isoformat() if ev.occurred_at }}">
           {{ ev.occurred_at.strftime("%b %d, %H:%M") if ev.occurred_at else "—" }}

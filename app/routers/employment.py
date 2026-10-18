@@ -347,8 +347,14 @@ async def job_new_save(
     db.add(job)
     db.commit()
     db.refresh(job)
+    employer_obj = db.get(Employer, job.employer_id)
     audit.log_event(db, current_user.id, "job_add", "employment", job.id,
-                    {"student_id": student.id, "employer_id": job.employer_id})
+                    {
+                        "student_id": student.id,
+                        "student_name": f"{student.first_name} {student.last_name}",
+                        "employer_id": job.employer_id,
+                        "employer_name": employer_obj.name if employer_obj else "",
+                    })
     return RedirectResponse(f"/students/{student.id}", status_code=303)
 
 
@@ -379,6 +385,7 @@ async def end_job_form(
             "student": student,
             "employer": employer,
             "errors": [],
+            "today": datetime.date.today().isoformat(),
         },
     )
 
@@ -427,5 +434,9 @@ async def end_job_save(
     job.version = (job.version or 1) + 1
     db.commit()
     audit.log_event(db, current_user.id, "job_end", "employment", job.id,
-                    {"end_date": str(end_dt)})
+                    {
+                        "end_date": str(end_dt),
+                        "student_name": f"{student.first_name} {student.last_name}",
+                        "employer_name": employer.name if employer else "",
+                    })
     return RedirectResponse(f"/students/{job.student_id}", status_code=303)

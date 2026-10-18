@@ -1,4 +1,5 @@
 """Students router — list, create, edit, detail."""
+import datetime
 import re
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -9,6 +10,7 @@ from app import audit
 from app.db import get_db
 from app.models import Employer, Employment, Program, Student, UserAccount
 from app.security import check_csrf, get_user_permissions, require_permission
+from app.services.kpis import is_current_job
 from app.templates_env import templates
 
 router = APIRouter(prefix="/students", tags=["students"])
@@ -233,7 +235,10 @@ async def student_new_save(
     db.commit()
     db.refresh(student)
     audit.log_event(db, current_user.id, "student_create", "student", student.id,
-                    {"student_number": student.student_number})
+                    {
+                        "student_number": student.student_number,
+                        "student_name": f"{student.first_name} {student.last_name}",
+                    })
     return RedirectResponse(f"/students/{student.id}", status_code=303)
 
 
@@ -352,7 +357,11 @@ async def student_edit_save(
     student.version = (student.version or 1) + 1
     db.commit()
     audit.log_event(db, current_user.id, "student_edit", "student", student.id,
-                    {"version": student.version})
+                    {
+                        "version": student.version,
+                        "student_number": student.student_number,
+                        "student_name": f"{student.first_name} {student.last_name}",
+                    })
     return RedirectResponse(f"/students/{student.id}", status_code=303)
 
 
@@ -371,13 +380,16 @@ async def student_detail(
     if student is None:
         return HTMLResponse("Student not found", status_code=404)
     program = db.get(Program, student.program_id) if student.program_id else None
-    jobs = (
+    all_jobs = (
         db.query(Employment, Employer)
         .join(Employer, Employment.employer_id == Employer.id)
         .filter(Employment.student_id == student_id)
         .order_by(Employment.start_date.desc())
         .all()
     )
+    today = datetime.date.today()
+    current_jobs = [(emp, employer) for emp, employer in all_jobs if is_current_job(emp, today)]
+    history_jobs = [(emp, employer) for emp, employer in all_jobs if not is_current_job(emp, today)]
     return templates.TemplateResponse(
         request,
         "students/detail.html",
@@ -385,6 +397,8 @@ async def student_detail(
             **_ctx(current_user, db),
             "student": student,
             "program": program,
-            "jobs": jobs,
+            "current_jobs": current_jobs,
+            "history_jobs": history_jobs,
+            "today": today,
         },
     )

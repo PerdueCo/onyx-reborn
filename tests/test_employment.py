@@ -323,9 +323,13 @@ def test_two_simultaneous_jobs(emp_client: TestClient, emp_db: Session):
 
     r = emp_client.get(f"/students/{student.id}")
     assert r.status_code == 200
+    # Both job titles must appear in the page (in the Current jobs section)
     assert "Sales Clerk" in r.text
     assert "Shelver" in r.text
-    assert r.text.count("Current") >= 2
+    # The "Current jobs" heading appears once; both jobs are shown there
+    assert "Current jobs" in r.text
+    # No End buttons should appear for the history section (both are open)
+    assert r.text.count("/end") >= 2
 
 
 # ---------------------------------------------------------------------------
