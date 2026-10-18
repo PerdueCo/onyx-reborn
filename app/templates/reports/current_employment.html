@@ -37,7 +37,7 @@
           {% for p in programs %}
           <option value="{{ p.id }}"
             {% if selected_program_id == p.id %}selected{% endif %}>
-            {{ p.name }}
+            {{ p.code }} &mdash; {{ p.name }}
           </option>
           {% endfor %}
         </select>

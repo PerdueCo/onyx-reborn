@@ -205,7 +205,7 @@ def seed(session: Session) -> None:
     # 1. Upsert programs
     PROGRAMS = [
         ("CIS101", "Computer Information Systems"),
-        ("ACC110", "Accounting Technology"),
+        ("ACC110", "Accounting"),
         ("BUS201", "Business Administration"),
         ("MKT130", "Marketing"),
         ("OFT120", "Office Technology"),

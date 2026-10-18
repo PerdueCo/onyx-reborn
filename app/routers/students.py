@@ -135,7 +135,7 @@ async def student_new_form(
     db: Session = Depends(get_db),
 ):
     _seed_programs(db)
-    programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
+    programs = db.query(Program).filter_by(active=True).order_by(Program.code).all()
     return templates.TemplateResponse(
         request,
         "students/form.html",
@@ -173,7 +173,7 @@ async def student_new_save(
 ):
     check_csrf(request, csrf_token)
     _seed_programs(db)
-    programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
+    programs = db.query(Program).filter_by(active=True).order_by(Program.code).all()
     vals = {
         "first_name": first_name, "last_name": last_name,
         "program_id": program_id, "status": status,
@@ -256,7 +256,7 @@ async def student_edit_form(
     student = db.get(Student, student_id)
     if student is None:
         return HTMLResponse("Student not found", status_code=404)
-    programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
+    programs = db.query(Program).filter_by(active=True).order_by(Program.code).all()
     return templates.TemplateResponse(
         request,
         "students/form.html",
@@ -298,7 +298,7 @@ async def student_edit_save(
     if student is None:
         return HTMLResponse("Student not found", status_code=404)
 
-    programs = db.query(Program).filter_by(active=True).order_by(Program.name).all()
+    programs = db.query(Program).filter_by(active=True).order_by(Program.code).all()
     vals = {
         "first_name": first_name, "last_name": last_name,
         "program_id": program_id, "status": status,

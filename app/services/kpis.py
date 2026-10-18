@@ -199,7 +199,7 @@ def get_employment_by_program(db: Session) -> list[dict[str, Any]]:
         emp_count = employed.get(p.id, 0)
         rows.append(
             {
-                "program_name": p.name,
+                "program_name": f"{p.code} \u2014 {p.name}",
                 "employed": emp_count,
                 "total": total,
                 "pct": round(emp_count / total * 100),

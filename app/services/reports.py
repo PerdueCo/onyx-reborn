@@ -65,10 +65,14 @@ def get_current_employment(
     for job, student, employer, program in raw:
         if not is_current_job(job, today):
             continue
+        if program:
+            prog_label = f"{program.code} \u2014 {program.name}"
+        else:
+            prog_label = "\u2014"
         rows.append({
             "student_name": f"{student.last_name}, {student.first_name}",
             "stu_number": student.student_number,
-            "program": program.name if program else "—",
+            "program": prog_label,
             "employer": employer.name,
             "job_title": job.job_title,
             "hours": str(job.hours_per_week) if job.hours_per_week is not None else "—",
@@ -82,8 +86,8 @@ def get_current_employment(
 # ---------------------------------------------------------------------------
 
 def get_programs(db: Session) -> list[Program]:
-    """Return active programs ordered by name."""
-    return db.query(Program).filter(Program.active == True).order_by(Program.name).all()  # noqa: E712
+    """Return active programs ordered by code."""
+    return db.query(Program).filter(Program.active == True).order_by(Program.code).all()  # noqa: E712
 
 
 def get_employers(db: Session) -> list[Employer]:
