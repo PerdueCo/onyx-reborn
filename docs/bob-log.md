@@ -678,3 +678,45 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `c9c3c45`
 - **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
 
+
+### 2026-10-17 — Bug fix: duplicate program name + CODE — Name display
+
+- **Items finished:**
+  1. **`scripts/seed_demo.py`** — ACC110 renamed from "Accounting Technology" to "Accounting".
+     The 1998 import already creates ACC501 "Accounting Technology"; the demo seed's
+     identical name was causing both to appear in every dropdown with the same label.
+     ACC501, MM301, NET401 from the legacy import are untouched.
+  2. **`app/services/reports.py`** — `get_programs()` ordered by `Program.code` (was `name`).
+     Report table `"program"` dict value now emits `"CODE — Name"` (e.g.
+     `"ACC110 — Accounting"`) instead of just the name.
+  3. **`app/services/kpis.py`** — `get_employment_by_program()` `program_name` key now uses
+     `"CODE — Name"` so the dashboard employment-rate bars are labelled with codes.
+  4. **`app/routers/students.py`** — all 4 program list queries changed from
+     `order_by(Program.name)` to `order_by(Program.code)`.
+  5. **`app/templates/reports/current_employment.html`** — program filter dropdown option
+     changed from `{{ p.name }}` to `{{ p.code }} &mdash; {{ p.name }}`.
+  6. **`tests/test_program_uniqueness.py`** — 3 new tests:
+     - `test_no_duplicate_program_names_after_seed` — verifies every Program.name is unique
+       across all rows after the demo seed runs.
+     - `test_report_dropdown_labels_include_codes` — verifies each active program's code
+       appears inside the /reports page's `<select id="program_id">` block.
+     - `test_report_table_program_column_includes_codes` — verifies tbody rows contain a
+       CODE pattern (e.g. `CIS101 —`) in the Program column.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "ACC110 'Accounting Technology' in seed_demo.py collides with ACC501 'Accounting Technology'
+    from 1998 import … rename ACC110 to 'Accounting'. Every program dropdown and list shows
+    'CODE — Name'. Sort by code. Tests: no two programs share a name; report dropdown labels
+    include codes. Run pytest, commit, push."
+- **What Bob did well:** Traced all five locations (seed_demo.py, reports.py, kpis.py,
+  students.py router, reports template) before writing a line; student detail template and
+  student form already used `code — name` format so no change needed there; targeted only
+  the broken spots.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None — 138 passed on first pytest run after all changes.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **138 passed**, 0 failed (3 new + 135 existing).
+- **Commit ID:** `447dbdb`
+- **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
+
+---
