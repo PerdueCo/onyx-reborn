@@ -53,7 +53,7 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 ## Day 4 — Thu Oct 16: 1 report + CSV + deploy + README (~4 hrs)
 
-- [ ] [Code] Employment history report: filter by employer and/or date range; paginated HTML table; CSV download button; `reports.read` permission guard (PRD §9, cut to 1 report per D-27)
+- [x] [Code] Employment history report: filter by employer and/or date range; paginated HTML table; CSV download button; `reports.read` permission guard (PRD §9, cut to 1 report per D-27) — **Current Employment** (student, STU, program, employer, job title, hours, rate); filter by program + employer; Export CSV; print-friendly CSS; 390px-safe scroll; 12 tests (commit `4ff97a6`)
 - [ ] [Code] `Dockerfile`; `.env.example` complete; `docker run` shows the app locally
 - [ ] Deploy to IBM Cloud Code Engine (fallback: Render free tier); demo accounts work on the live URL
 - [ ] [Code] `README.md`: what it is, 1998 → 2026 comparison table, run locally, run tests, demo logins + TOTP secrets, deploy steps, "Built with Bob" section

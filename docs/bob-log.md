@@ -595,3 +595,61 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `bb66baf`
 - **Next item:** Day 4 — Employment history report + CSV export; Dockerfile; README.
 
+### 2026-10-17 — Step 8: /reports — Current Employment report + CSV export
+
+- **Items finished:**
+  1. **`app/services/reports.py`** — `get_current_employment(db, *, program_id, employer_id)`:
+     - Joins Employment → Student → Employer → Program (outer join)
+     - Filters to `Student.status == "active"`, optional program_id / employer_id
+     - Python-side `is_current_job()` call from `kpis.py` (D-31 single source of truth)
+     - Returns list of dicts with keys: student_name, stu_number, program, employer,
+       job_title, hours, rate (formatted "$X.XX" or "—")
+     - `get_programs()` / `get_employers()` helpers for filter dropdowns
+  2. **`app/routers/reports.py`** — requires `reports.read` permission:
+     - `GET /reports` — HTML table with program + employer filter GET params
+     - `GET /reports/current-employment/export.csv` — StreamingResponse; same
+       filter params; CSV header row + one data row per result
+  3. **`app/templates/reports/current_employment.html`** — extends `base.html`;
+     - Filter form (program select, employer select, Filter + Clear buttons)
+     - "N records found" count + Export CSV button + Print button
+     - 7-column `<table class="report-table">` inside `.report-table-wrap`
+     - Print `@media` block hides sidebar/topbar/filters/actions inline in `<style>`
+  4. **`app/static/css/onyx.css`** — appended report styles:
+     - `.report-table-wrap { overflow-x: auto }` → sideways scroll at 390px
+     - `.report-table` min-width: 640px; th uppercase muted; td borders
+     - `.report-table td.mono` (STU number), `.report-table td.num` (right-align)
+     - `.report-filter-form .form-row-3` 3-col grid, collapses to 1-col ≤639px
+     - `@media print` block hides sidebar + nav + filters; page margins 1.5cm
+  5. **`app/main.py`** — added `include_router(reports_router.router)`
+  6. **`tests/test_reports.py`** — 12 tests (all green first run):
+     - `test_reports_page_loads` — 200
+     - `test_reports_html_has_column_headers` — all 7 headers present
+     - `test_reports_current_only` — ended job excluded; count == 2
+     - `test_reports_filter_by_employer_html` — Corp A → 1 row; Corp B absent
+     - `test_reports_filter_by_program_html` — Beta → 1 row; Alpha absent
+     - `test_csv_headers_match_screen` — CSV row 0 == expected 7 strings exactly
+     - `test_csv_row_count_matches_html_unfiltered` — CSV count == HTML count
+     - `test_csv_row_count_matches_html_with_employer_filter` — both == 1
+     - `test_csv_row_count_matches_html_with_program_filter` — both == 1
+     - `test_reports_empty_filter_shows_zero` — "0 records" in page
+     - `test_reports_requires_auth` — /reports unauthenticated → 303 /login
+     - `test_csv_export_requires_auth` — /export.csv unauthenticated → 303 /login
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Run-sheet step 8: build /reports with one report: Current employment (student, STU,
+    program, employer, job title, hours, rate), using the shared is_current() helper.
+    Filters by program and employer, on-screen table, Export CSV button, print-friendly
+    CSS, works at 390px (table scrolls sideways). Add 'Reports' in the sidebar if
+    missing. Tests: CSV headers + row count match the on-screen table for a filter."
+- **What Bob did well:** Sidebar already had Reports nav item (step 7 prebuilt it).
+  `is_current_job()` reused without duplication. CSV header list kept in one place in
+  the router so HTML and CSV headers can never diverge. `overflow-x:auto` wrapper gives
+  390px support for free. Print CSS hidden via inline `<style>` in template so it only
+  loads on this page.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None — 12 new tests + 118 existing = 130 passed on first run.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **130 passed**, 0 failed (12 new + 118 existing).
+- **Commit ID:** `4ff97a6`
+- **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
+
