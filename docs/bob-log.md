@@ -653,3 +653,28 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `4ff97a6`
 - **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
 
+
+### 2026-10-17 — Bug fix: empty program_id / employer_id caused 422 on /reports
+
+- **Items finished:**
+  1. **`app/routers/reports.py`** — both `/reports` and `/reports/current-employment/export.csv`:
+     - Changed `program_id` and `employer_id` query params from `int | None` to `str | None`.
+     - Added `_coerce_id(raw)` helper: `None` or `""` → `None` (no filter); digit string → `int`; anything else → `None` (ignore garbage). This fixes the FastAPI 422 `int_parsing` error that fired when the "All programs" or "All employers" `<option value="">` was selected, which sends `program_id=` (empty string).
+     - `selected_program_id` / `selected_employer_id` passed to template as coerced `int | None` so `<option selected>` matching still works.
+  2. **`tests/test_reports.py`** — 5 new regression tests added:
+     - `test_reports_empty_string_both_params_returns_all` — `?program_id=&employer_id=` → 200, all 2 current rows.
+     - `test_reports_empty_program_id_with_employer_set` — `program_id=` blank + `employer_id=N` → 1 row (employer filter only).
+     - `test_reports_empty_employer_id_with_program_set` — `employer_id=` blank + `program_id=N` → 1 row (program filter only).
+     - `test_csv_export_empty_string_both_params` — CSV with both empty → 200, 2 data rows.
+     - `test_csv_export_empty_program_id_with_employer_set` — CSV with blank program + set employer → 1 data row.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Bug in /reports: submitting the filter form with 'All programs' or 'All employers' sends program_id= (empty string) and FastAPI returns a 422 int_parsing error. Fix both /reports and /reports/current-employment/export.csv: accept program_id and employer_id as optional strings, treat '' (or missing) as no filter, convert digits to int, and ignore anything else. Make the Export CSV link carry the same filters. Add tests … Run pytest, commit, push."
+- **What Bob did well:** Diagnosed root cause immediately (FastAPI strict int coercion rejects `""`); minimal fix — only two param type annotations changed + one 5-line helper added; template needed no change (coerced int `None` is already falsy, so CSV link logic was already correct); all 5 new tests written to cover every combination described in the prompt.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None — 17 report tests + 118 existing = 135 passed on first run after fix.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **135 passed**, 0 failed (5 new + 130 existing).
+- **Commit ID:** `c9c3c45`
+- **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
+
