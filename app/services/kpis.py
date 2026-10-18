@@ -275,6 +275,7 @@ _ACTION_LABELS = {
     "sign_in_failed": "failed sign-in attempt",
     "access_denied": "was denied access",
     "account_locked": "Account locked",
+    "account_unlock": "unlocked account",
     "import_run": "ran legacy import",
 }
 
@@ -335,6 +336,12 @@ def _fmt_activity(event_type: str, actor_name: str, detail: dict | None) -> str:
     if event_type == "import_run":
         n = detail.get("imported", "")
         return f"{actor} ran legacy import{(' — ' + str(n) + ' records') if n else ''}"
+
+    if event_type == "account_unlock":
+        unlocked_user = detail.get("unlocked_user", "") if detail else ""
+        if unlocked_user:
+            return f"{actor} unlocked account for {unlocked_user}"
+        return f"{actor} unlocked an account"
 
     # fallback
     return f"{actor}: {event_type.replace('_', ' ')}"

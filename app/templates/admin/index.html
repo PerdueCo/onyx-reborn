@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Administration — Onyx Reborn{% endblock %}
+{% set active_page = "admin" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Administration</h1>
+    <p class="page-subtitle">Users &amp; access · Recent audit log.</p>
+  </div>
+</div>
+
+{# ── Users and access ─────────────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1.5rem">
+  <h2 style="font-size:1rem;font-weight:600;margin:0 0 .75rem">Users &amp; access</h2>
+  <div class="table-scroll">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>2-Step</th>
+        <th>Status</th>
+        <th>Last sign-in</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in users %}
+      <tr>
+        <td><strong>{{ row.user.display_name or '—' }}</strong></td>
+        <td>{{ row.user.email or '—' }}</td>
+        <td>{{ row.roles }}</td>
+        <td>
+          {% if row.mfa_on %}
+            <span style="color:var(--success,#22863a);font-weight:600">On</span>
+          {% else %}
+            <span class="text-muted">Off</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if row.status == 'Locked' %}
+            <span style="color:var(--danger,#cb2431);font-weight:600">Locked</span>
+          {% elif row.status == 'Active' %}
+            <span style="color:var(--success,#22863a)">Active</span>
+          {% else %}
+            <span class="text-muted">{{ row.status }}</span>
+          {% endif %}
+        </td>
+        <td class="text-muted" style="font-size:.85rem">
+          {% if row.last_sign_in %}
+            {{ row.last_sign_in.strftime('%Y-%m-%d %H:%M') }}
+          {% else %}
+            Never
+          {% endif %}
+        </td>
+        <td style="text-align:right">
+          {% if row.locked %}
+          <form method="post" action="/admin/unlock/{{ row.user.id }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+            <button type="submit" class="btn btn-primary btn-sm">Unlock</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+{# ── Recent audit log ─────────────────────────────────────────────── #}
+<div class="card">
+  <h2 style="font-size:1rem;font-weight:600;margin:0 0 .75rem">Recent audit log
+    <span class="text-muted" style="font-weight:400;font-size:.85rem">(last 50 events)</span>
+  </h2>
+  {% if audit_log %}
+  <ul class="activity-list" style="margin:0;padding:0;list-style:none">
+    {% for ev in audit_log %}
+    <li class="activity-item{% if ev.is_security %} activity-security{% endif %}"
+        style="padding:6px 0;border-bottom:1px solid var(--border);font-size:.9rem;display:flex;gap:12px;align-items:baseline">
+      <span class="text-muted" style="white-space:nowrap;font-size:.8rem;min-width:130px">
+        {% if ev.occurred_at %}{{ ev.occurred_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+      </span>
+      <span {% if ev.is_security %}style="color:var(--danger,#cb2431)"{% endif %}>
+        {{ ev.sentence }}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="text-muted" style="margin:0">No audit events yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

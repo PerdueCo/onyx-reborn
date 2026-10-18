@@ -1,6 +1,7 @@
 """Employment router — employers CRUD + add job + end job.
 
 Routes:
+  GET       /employment                    overview (current jobs + employers tabs)
   GET/POST  /employment/employers          list + add
   GET/POST  /employment/employers/{id}/edit
   GET/POST  /employment/new?student_id=    add job to a student
@@ -33,6 +34,57 @@ _US_STATES = [
 ]
 
 JOB_TYPES = ["part_time", "full_time", "other", "unknown"]
+
+
+# ---------------------------------------------------------------------------
+# /employment overview — current jobs + employers
+# ---------------------------------------------------------------------------
+
+@router.get("", response_class=HTMLResponse)
+async def employment_overview(
+    request: Request,
+    tab: str = "jobs",
+    current_user: UserAccount = Depends(_manage_dep),
+    db: Session = Depends(get_db),
+):
+    """Overview page: 'Current jobs' tab and 'Employers' tab."""
+    today = datetime.date.today()
+
+    # Current jobs: start_date <= today AND (end_date IS NULL OR end_date > today)
+    raw_jobs = (
+        db.query(Employment, Student, Employer)
+        .join(Student, Student.id == Employment.student_id)
+        .join(Employer, Employer.id == Employment.employer_id)
+        .filter(
+            Employment.start_date <= today,
+            (Employment.end_date == None) | (Employment.end_date > today),  # noqa: E711
+        )
+        .order_by(Student.last_name, Student.first_name)
+        .all()
+    )
+    current_jobs = [
+        {
+            "employment": job,
+            "student": student,
+            "employer": employer,
+        }
+        for job, student, employer in raw_jobs
+    ]
+
+    employers = db.query(Employer).order_by(Employer.name).all()
+
+    active_tab = tab if tab in ("jobs", "employers") else "jobs"
+
+    return templates.TemplateResponse(
+        request,
+        "employment/overview.html",
+        {
+            **_ctx(current_user, db),
+            "current_jobs": current_jobs,
+            "employers": employers,
+            "active_tab": active_tab,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------

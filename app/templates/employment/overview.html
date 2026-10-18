@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Employment — Onyx Reborn{% endblock %}
+{% set active_page = "employment" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Employment</h1>
+    <p class="page-subtitle">Current placements and employer directory.</p>
+  </div>
+  <div>
+    <a href="/employment/employers/new" class="btn btn-primary">
+      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+      Add Employer
+    </a>
+  </div>
+</div>
+
+{# ── Tab bar ─────────────────────────────────────────────────────── #}
+<div class="tab-bar" style="margin-bottom:1.25rem;border-bottom:2px solid var(--border);">
+  <a href="/employment?tab=jobs"
+     class="tab-link{% if active_tab == 'jobs' %} tab-active{% endif %}"
+     style="display:inline-block;padding:8px 18px;font-weight:{% if active_tab == 'jobs' %}600{% else %}400{% endif %};color:{% if active_tab == 'jobs' %}var(--primary){% else %}var(--text-muted){% endif %};border-bottom:2px solid {% if active_tab == 'jobs' %}var(--primary){% else %}transparent{% endif %};margin-bottom:-2px;text-decoration:none;">
+    Current Jobs
+    <span class="badge" style="background:var(--primary-light,#e8f0fd);color:var(--primary);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px;">{{ current_jobs|length }}</span>
+  </a>
+  <a href="/employment?tab=employers"
+     class="tab-link{% if active_tab == 'employers' %} tab-active{% endif %}"
+     style="display:inline-block;padding:8px 18px;font-weight:{% if active_tab == 'employers' %}600{% else %}400{% endif %};color:{% if active_tab == 'employers' %}var(--primary){% else %}var(--text-muted){% endif %};border-bottom:2px solid {% if active_tab == 'employers' %}var(--primary){% else %}transparent{% endif %};margin-bottom:-2px;text-decoration:none;">
+    Employers
+    <span class="badge" style="background:var(--primary-light,#e8f0fd);color:var(--primary);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px;">{{ employers|length }}</span>
+  </a>
+</div>
+
+{# ── Current Jobs tab ─────────────────────────────────────────────── #}
+{% if active_tab == 'jobs' %}
+<div class="card" id="tab-jobs">
+  {% if current_jobs %}
+  <div class="table-scroll">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>STU #</th>
+        <th>Employer</th>
+        <th>Title</th>
+        <th>Start</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in current_jobs %}
+      <tr>
+        <td><strong>{{ row.student.last_name }}, {{ row.student.first_name }}</strong></td>
+        <td>{{ row.student.student_number }}</td>
+        <td>{{ row.employer.name }}</td>
+        <td>{{ row.employment.job_title }}</td>
+        <td>{{ row.employment.start_date }}</td>
+        <td style="text-align:right">
+          <a href="/students/{{ row.student.id }}" class="btn btn-secondary btn-sm">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>No current placements found.</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# ── Employers tab ────────────────────────────────────────────────── #}
+{% if active_tab == 'employers' %}
+<div class="card" id="tab-employers">
+  {% if employers %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Phone</th>
+        <th>Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in employers %}
+      <tr>
+        <td><strong>{{ e.name }}</strong></td>
+        <td>{{ e.city or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.state or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.phone or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.company_type or '<span class="text-muted">—</span>' }}</td>
+        <td style="text-align:right">
+          <a href="/employment/employers/{{ e.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <p>No employers yet — <a href="/employment/employers/new">add one</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

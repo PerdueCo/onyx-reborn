@@ -16,8 +16,11 @@
   <header class="public-topbar">
     <span class="wordmark"><strong>Onyx</strong> Reborn</span>
     {% block topbar_right %}
-      <a href="/login" class="btn btn-primary btn-sm topbar-signin"
-         style="height:44px;line-height:44px;padding:0 20px;font-size:18px;border-radius:8px;">Sign in</a>
+      <div style="display:flex;align-items:center;gap:16px">
+        <a href="/about" style="color:#fff;font-size:15px;text-decoration:none;opacity:.85">About</a>
+        <a href="/login" class="btn btn-primary btn-sm topbar-signin"
+           style="height:44px;line-height:44px;padding:0 20px;font-size:18px;border-radius:8px;">Sign in</a>
+      </div>
     {% endblock %}
   </header>
 
@@ -28,8 +31,9 @@
   <footer class="public-footer">
     <span class="footer-full">
       <span class="footer-wordmark"><strong>Onyx</strong> Reborn</span> — BSSI Modernization
+      &nbsp;·&nbsp; <a href="/about" style="color:inherit;opacity:.75;text-decoration:none">About</a>
     </span>
-    <span class="footer-short"><strong>BSSI Modernization</strong></span>
+    <span class="footer-short"><strong>BSSI Modernization</strong> · <a href="/about" style="color:inherit;opacity:.75;text-decoration:none">About</a></span>
   </footer>
 
 </body>
