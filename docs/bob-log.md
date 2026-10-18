@@ -720,3 +720,68 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Next item:** Day 4 — Dockerfile; `.env.example`; README.md.
 
 ---
+
+### 2026-10-17 — Fix sidebar: /employment overview, /admin, About links
+
+- **Items finished:**
+  1. **`app/routers/employment.py`** — Added `GET /employment` overview route. Two-tab
+     page: "Current Jobs" (all students with a currently active job, using the same
+     `start_date <= today AND end_date IS NULL OR end_date > today` logic as D-31; columns
+     student, STU#, employer, title, start, link to student) and "Employers" (existing
+     employer list + Add Employer button). Tab selected via `?tab=jobs` or `?tab=employers`.
+     Sidebar `href="/employment"` now resolves to a real page instead of 404.
+  2. **`app/templates/employment/overview.html`** — New two-tab template.
+  3. **`app/routers/admin.py`** — Complete admin router.  Requires `accounts.manage`
+     permission (returns 403 for Staff). `GET /admin` renders a users table (name, email,
+     role, 2-step on/off, status Active/Locked, last sign-in timestamp) and a "Recent audit
+     log" card (last 50 events as plain-English sentences, same format as dashboard).
+     `POST /admin/unlock/{user_id}` clears `locked_until` + `failed_logins=0`, writes an
+     `account_unlock` audit event, CSRF-protected, redirects back to `/admin`.
+  4. **`app/templates/admin/index.html`** — Admin page template.
+  5. **`app/services/kpis.py`** — Added `account_unlock` to `_ACTION_LABELS` dict and a
+     new branch in `_fmt_activity` that renders "Actor unlocked account for TargetUser".
+  6. **`app/templates/public_base.html`** — Added "About" link to the right of the
+     wordmark in the public topbar (left of Sign in) and in the footer.
+  7. **`app/templates/base.html`** — Added "About Onyx" link at the bottom of the
+     signed-in sidebar below the nav list.
+  8. **`app/main.py`** — Included `admin_router`.
+  9. **`tests/test_sidebar_links.py`** — 18 new tests:
+     - `/about` 200 unauthenticated; About link in landing topbar.
+     - Staff: `/dashboard`, `/students`, `/employment`, `/employment?tab=jobs`,
+       `/employment?tab=employers`, `/reports` → all 200.
+     - Staff: `/admin` → 403.
+     - Staff: signed-in sidebar contains `/about` link.
+     - Admin: all Staff routes + `/admin` → 200.
+     - `/admin` renders Users table (both seeded users visible).
+     - Unlock POST: `locked_until` cleared to `None`, `failed_logins` reset to 0.
+     - Unlock POST: writes `account_unlock` audit event.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Fix the sidebar so every menu item works (judges will click each one): 1. /employment
+    (Staff + Admin): page with two tabs/sections: 'Current jobs' (all students, using
+    is_current(): student, STU, employer, title, start, link to student) and 'Employers'
+    (the existing employers list with Add employer). No 404. 2. /admin (Administrator only,
+    403 for Staff), 'Users and access' light version: table of users (name, email, role,
+    2-step on/off, status Active/Locked, last sign-in) with an 'Unlock' button on locked
+    accounts (CSRF, audit event), plus 'Recent audit log' (last 50 events in plain English,
+    like the dashboard). No reset password or role change. 3. About: add 'About' in the
+    welcome page top bar (left of Sign in) and footer, and a small 'About Onyx' link at the
+    bottom of the signed-in sidebar. /about stays public. Tests: every sidebar link returns
+    200 for its role (Staff: no /admin -> 403); unlock clears lockout; /about 200 signed
+    out. Run pytest, commit, push. Do not start a uvicorn server yourself; use the TestClient."
+- **What Bob did well:** Read all 9 required files before touching code; diagnosed the
+  /employment 404 immediately (router had no base route); reused existing `is_current_job`
+  SQL filter pattern; recognised that admin.py was blank and built it from scratch in one
+  pass; threaded `_fmt_activity` import from kpis.py into admin.py rather than duplicating
+  the logic; ran new tests in isolation first (18/18 pass, 60s), then validated each
+  existing test file individually (all green); commit message lists all 9 touched files.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** PowerShell `head` not available — switched to `Select-Object -First`.
+  Full pytest suite times out in one shot due to TOTP real-clock auth (each session ~3s);
+  ran test files individually, all passed.
+- **Decisions changed:** None.
+- **Tests:** 18 new tests + 138 existing = **156 total**, 0 failed (verified per-file).
+- **Commit ID:** `471bff8`
+- **Next item:** Day 4 — Dockerfile; `.env.example` complete; README.md.
+
+---
