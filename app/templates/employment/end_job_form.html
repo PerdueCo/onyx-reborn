@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}End Job — {{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% endblock %}
+{% set active_page = "employment" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>End Job</h1>
+    <p class="page-subtitle">
+      <a href="/students/{{ student.id }}">{{ student.student_number }}</a> —
+      {{ student.first_name }} {{ student.last_name }}
+    </p>
+  </div>
+  <div>
+    <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</div>
+
+{% if errors %}
+<div class="alert alert-error" role="alert">
+  <ul style="margin:0;padding-left:1.25rem">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- Job summary card -->
+<div class="card" style="margin-bottom:1rem">
+  <div class="card-header">
+    <span class="card-title">Current Job</span>
+    <span class="badge badge-active">Current</span>
+  </div>
+  <dl class="detail-grid">
+    <dt>Employer</dt>
+    <dd>{{ employer.name }}{% if employer.city %} — {{ employer.city }}{% if employer.state %}, {{ employer.state }}{% endif %}{% endif %}</dd>
+
+    <dt>Title</dt>
+    <dd>{{ job.job_title }}</dd>
+
+    <dt>Type</dt>
+    <dd>
+      <span class="badge badge-{{ job.job_type }}">
+        {{ job.job_type | replace('_', ' ') | capitalize }}
+      </span>
+    </dd>
+
+    <dt>Started</dt>
+    <dd>{{ job.start_date }}</dd>
+
+    {% if job.hours_per_week %}
+    <dt>Hours / week</dt>
+    <dd>{{ job.hours_per_week }}</dd>
+    {% endif %}
+  </dl>
+</div>
+
+<!-- End date form -->
+<div class="card">
+  <div class="card-header"><span class="card-title">Set End Date</span></div>
+  <form method="post" novalidate style="padding:0 1rem 1rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group" style="max-width:220px;margin-top:1rem">
+      <label class="form-label" for="end_date">End date <span class="required">*</span></label>
+      <input class="form-input {% if errors %}input-error{% endif %}"
+             id="end_date" name="end_date" type="date" required
+             value="">
+    </div>
+    <p class="form-hint" style="margin-top:.25rem">
+      The employment row will be kept in history. The other jobs for this student are unaffected.
+    </p>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem">
+      <button type="submit" class="btn btn-danger">End Job</button>
+      <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

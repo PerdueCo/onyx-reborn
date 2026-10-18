@@ -90,6 +90,7 @@
         <th>Start</th>
         <th>End</th>
         <th>Hours/wk</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -111,6 +112,11 @@
           {% endif %}
         </td>
         <td>{{ emp.hours_per_week or '—' }}</td>
+        <td style="text-align:right">
+          {% if not emp.end_date and 'employment.manage' in user_perms %}
+          <a href="/employment/{{ emp.id }}/end" class="btn btn-secondary btn-sm">End</a>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

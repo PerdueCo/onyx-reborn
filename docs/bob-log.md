@@ -473,3 +473,59 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `fd8614a`
 - **Next item:** Day 3 — Employers list + add + edit; add job / end job; `kpis.py`
   real counts; dashboard KPI cards wired to DB.
+
+---
+
+### 2026-10-16 — Day 3 part 1: Employment router + employers + add/end job
+
+- **Items finished:**
+  1. **`app/routers/employment.py`** — filled from empty stub to full implementation:
+     - `GET /employment/employers` — list all employers (sorted by name)
+     - `GET/POST /employment/employers/new` — add employer (name required; address, city,
+       state, zip, phone, company_type optional; audit event; D-06 state field fixed)
+     - `GET/POST /employment/employers/{id}/edit` — edit employer; same validation
+     - `GET/POST /employment/new?student_id=` — add job to a student; employer dropdown,
+       job_title required, job_type dropdown (part_time/full_time/other/unknown), start_date
+       required, end_date optional with start≤end guard, hours_per_week non-negative guard,
+       hourly_rate + supervisor (legacy fields); audit event; 303 → student detail
+     - `GET/POST /employment/{id}/end` — end a current job; end_date required, must be ≥
+       start_date; version incremented; history preserved; audit event; 303 → student detail;
+       already-ended job → 400
+  2. **Templates** (`app/templates/employment/`):
+     - `employers_list.html` — data table with Edit button per row
+     - `employer_form.html` — add/edit form with state dropdown (mirrors student form pattern)
+     - `job_form.html` — add-job form linked from student detail; employer dropdown, date
+       inputs, hours/rate/supervisor fields; empty-employers warning
+     - `end_job_form.html` — confirmation form showing current-job summary card + date input
+  3. **`app/main.py`** — employment router registered.
+  4. **`app/templates/students/detail.html`** — added "End" button per current job row
+     (visible only when `employment.manage` in `user_perms`); added `<th>` column header.
+  5. **`tests/test_employment.py`** — 15 new end-to-end tests:
+     - `test_employers_list_requires_auth` — unauthenticated → 303 to /login
+     - `test_add_employer_success` — valid POST → 303, employer in list
+     - `test_add_employer_name_required` — blank name → 422
+     - `test_edit_employer_saves` — name change persists in DB
+     - `test_add_job_success` — valid POST → 303 to student detail, job visible
+     - `test_add_job_missing_title_rejected` — 422 + error
+     - `test_add_job_negative_hours_rejected` — acceptance check 4 (hours ≥ 0)
+     - `test_add_job_end_before_start_rejected` — acceptance check 4 (date order)
+     - `test_two_simultaneous_jobs` — acceptance check 2 (two current jobs, both shown)
+     - `test_end_job_success` — end_date saved, job still in history (check 3)
+     - `test_end_job_end_date_before_start_rejected` — 422, unchanged (check 4)
+     - `test_end_job_already_ended_returns_400` — guard works
+     - `test_end_one_job_leaves_other_intact` — check 3 isolation
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "First check app/routers/employment.py and any job templates that already exist; reuse
+    and finish them instead of starting over."
+- **What Bob did well:** Inspected all existing files before writing a line of code; reused
+  exact patterns from `students.py` (dependency injection, `_ctx`, `check_csrf`, `_manage_dep`,
+  template context, audit calls); handled the FastAPI path-ordering risk (static
+  `/employers/new` before `/employers/{id}/edit`) correctly; all 15 tests green first run.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None — 73 passed on first pytest run.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **73 passed**, 0 failed (15 new employment tests + 60 existing).
+- **Commit ID:** (pending push)
+- **Next item:** Day 3 remainder — `app/services/kpis.py` real counts; Dashboard KPI cards
+  wired to DB; recent activity feed (last 10 audit events).

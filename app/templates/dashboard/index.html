@@ -8,75 +8,173 @@
 <div class="page-header">
   <div>
     <h1>Overview</h1>
-    <p class="page-subtitle">Welcome to Onyx Reborn — BSSI Student Information System</p>
+    <p class="page-subtitle">Welcome, {{ current_user.display_name or "User" }}{% if is_admin %} &mdash; Administrator{% endif %}</p>
   </div>
 </div>
 
-<!-- KPI row (placeholder values — real queries come in Day 5) -->
+{# ── KPI row ──────────────────────────────────────────────────────────── #}
 <div class="kpi-row">
-  <div class="kpi-card">
-    <div class="kpi-label">Total Students</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">No data yet</div>
-  </div>
+
   <div class="kpi-card">
     <div class="kpi-label">Active Students</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">No data yet</div>
+    <div class="kpi-value">{{ kpis.total_students }}</div>
+    <div class="kpi-sub">Total enrolled</div>
   </div>
+
+  <div class="kpi-card">
+    <div class="kpi-label">Currently Employed</div>
+    <div class="kpi-value">{{ kpis.employed_count }}</div>
+    <div class="kpi-sub">{{ kpis.employed_pct }}% of active students</div>
+  </div>
+
   <div class="kpi-card">
     <div class="kpi-label">Current Jobs</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">No data yet</div>
+    <div class="kpi-value">{{ kpis.current_jobs }}</div>
+    <div class="kpi-sub kpi-rate">Avg rate {{ kpis.avg_hourly_rate }}/hr</div>
   </div>
+
   <div class="kpi-card">
-    <div class="kpi-label">Employers</div>
-    <div class="kpi-value">—</div>
-    <div class="kpi-sub">No data yet</div>
+    <div class="kpi-label">Seeking Employment</div>
+    <div class="kpi-value">{{ kpis.seeking_count }}</div>
+    <div class="kpi-sub">Students seeking work</div>
   </div>
-</div>
 
-<!-- Quick links -->
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">Quick links</span>
-  </div>
-  <div class="flex gap-3" style="flex-wrap:wrap">
-    <a href="/students/new" class="btn btn-primary">
-      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-      </svg>
-      Add Student
-    </a>
-    <a href="/students" class="btn btn-secondary">
-      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-      </svg>
-      Students
-    </a>
-    <a href="/employment" class="btn btn-secondary">
-      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
-        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
-      </svg>
-      Employment
-    </a>
-    <a href="/reports" class="btn btn-secondary">
-      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/>
-      </svg>
-      Reports
-    </a>
-  </div>
 </div>
+{# ── End KPI row ──────────────────────────────────────────────────────── #}
 
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">System status</span>
+{# ── Two-column lower section ─────────────────────────────────────────── #}
+<div class="dash-grid">
+
+  {# Recent activity — both roles #}
+  <div class="card dash-activity">
+    <div class="card-header">
+      <span class="card-title">Recent activity</span>
+    </div>
+    {% if recent_activity %}
+    <ul class="activity-list">
+      {% for ev in recent_activity %}
+      <li class="activity-item">
+        <span class="activity-dot activity-dot-{{ ev.event_type.split('_')[0] }}"></span>
+        <div class="activity-body">
+          <span class="activity-actor">{{ ev.actor_name }}</span>
+          <span class="activity-action">{{ ev.event_type | replace("_", " ") }}</span>
+          {% if ev.entity_type and ev.entity_type != "" %}
+          <span class="activity-entity text-muted">· {{ ev.entity_type }}{% if ev.entity_id %} #{{ ev.entity_id }}{% endif %}</span>
+          {% endif %}
+        </div>
+        <time class="activity-time text-muted" datetime="{{ ev.occurred_at.isoformat() if ev.occurred_at }}">
+          {{ ev.occurred_at.strftime("%b %d, %H:%M") if ev.occurred_at else "—" }}
+        </time>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-state">No activity recorded yet.</p>
+    {% endif %}
   </div>
-  <p class="text-muted" style="font-size:13px">
-    Database connected · Migrations current ·
-    <a href="/admin">Administration</a>
-  </p>
+
+  {# Quick links card — both roles #}
+  <div class="card dash-links">
+    <div class="card-header">
+      <span class="card-title">Quick links</span>
+    </div>
+    <div class="quick-links">
+      {% if 'students.manage' in user_perms %}
+      <a href="/students/new" class="quick-link-btn btn btn-primary">
+        <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        Add Student
+      </a>
+      {% endif %}
+      <a href="/students" class="quick-link-btn btn btn-secondary">
+        <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+        Students
+      </a>
+      {% if 'employment.manage' in user_perms %}
+      <a href="/employment" class="quick-link-btn btn btn-secondary">
+        <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+          <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
+        </svg>
+        Employment
+      </a>
+      {% endif %}
+      {% if 'reports.read' in user_perms %}
+      <a href="/reports" class="quick-link-btn btn btn-secondary">
+        <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/>
+        </svg>
+        Reports
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
 </div>
+{# ── End two-column section ───────────────────────────────────────────── #}
+
+{# ── Admin-only: Data Safety + Security Events ───────────────────────── #}
+{% if is_admin %}
+<div class="dash-grid dash-admin-row">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        <svg class="card-title-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Data safety
+      </span>
+    </div>
+    <dl class="detail-grid" style="row-gap:14px">
+      <dt>SSN storage</dt>
+      <dd><span class="badge badge-active badge-dot">None — discarded on import</span></dd>
+      <dt>MFA enforcement</dt>
+      <dd><span class="badge badge-active badge-dot">All Admin &amp; Staff accounts</span></dd>
+      <dt>Audit log</dt>
+      <dd><span class="badge badge-active badge-dot">All write operations recorded</span></dd>
+      <dt>Session timeout</dt>
+      <dd>30 minutes idle</dd>
+      <dt>Password hashing</dt>
+      <dd>bcrypt (cost 12)</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        <svg class="card-title-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+        </svg>
+        Security events
+        <span class="badge badge-pending" style="margin-left:8px;font-size:11px">Admin only</span>
+      </span>
+    </div>
+    {% if security_events %}
+    <ul class="activity-list">
+      {% for ev in security_events %}
+      <li class="activity-item">
+        <span class="activity-dot activity-dot-sign"></span>
+        <div class="activity-body">
+          <span class="activity-actor">{{ ev.actor_name }}</span>
+          <span class="activity-action">{{ ev.event_type | replace("_", " ") }}</span>
+        </div>
+        <time class="activity-time text-muted" datetime="{{ ev.occurred_at.isoformat() if ev.occurred_at }}">
+          {{ ev.occurred_at.strftime("%b %d, %H:%M") if ev.occurred_at else "—" }}
+        </time>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="empty-state">No security events recorded.</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endif %}
+{# ── End admin-only section ───────────────────────────────────────────── #}
+
 {% endblock %}

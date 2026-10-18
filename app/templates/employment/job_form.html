@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Add Job — {{ student.first_name }} {{ student.last_name }} — Onyx Reborn{% endblock %}
+{% set active_page = "employment" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Add Job</h1>
+    <p class="page-subtitle">
+      <a href="/students/{{ student.id }}">{{ student.student_number }}</a> —
+      {{ student.first_name }} {{ student.last_name }}
+    </p>
+  </div>
+  <div>
+    <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+  </div>
+</div>
+
+{% if errors %}
+<div class="alert alert-error" role="alert">
+  <ul style="margin:0;padding-left:1.25rem">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<form method="post" action="/employment/new" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <input type="hidden" name="student_id" value="{{ student.id }}">
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="card-title">Job Details</span></div>
+    <div class="form-grid">
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="employer_id">Employer <span class="required">*</span></label>
+        <select class="form-select {% if 'Employer' in errors|join %}input-error{% endif %}"
+                id="employer_id" name="employer_id" required>
+          <option value="">— Select employer —</option>
+          {% for emp in employers %}
+          <option value="{{ emp.id }}"
+            {% if vals.get('employer_id') == emp.id|string %}selected{% endif %}>
+            {{ emp.name }}{% if emp.city %} ({{ emp.city }}){% endif %}
+          </option>
+          {% endfor %}
+        </select>
+        {% if not employers %}
+        <p class="form-hint" style="color:#b45309">
+          No active employers. <a href="/employment/employers/new">Add one</a> first.
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="job_title">Job title <span class="required">*</span></label>
+        <input class="form-input {% if 'Job title' in errors|join %}input-error{% endif %}"
+               id="job_title" name="job_title" type="text" maxlength="128" required
+               value="{{ vals.get('job_title', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="job_type">Job type</label>
+        <select class="form-select" id="job_type" name="job_type">
+          {% for jt in job_types %}
+          <option value="{{ jt }}"
+            {% if vals.get('job_type', 'unknown') == jt %}selected{% endif %}>
+            {{ jt | replace('_', ' ') | capitalize }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="hours_per_week">Hours / week</label>
+        <input class="form-input {% if 'Hours' in errors|join %}input-error{% endif %}"
+               id="hours_per_week" name="hours_per_week" type="number" min="0" max="168"
+               value="{{ vals.get('hours_per_week', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="start_date">Start date <span class="required">*</span></label>
+        <input class="form-input {% if 'Start date' in errors|join %}input-error{% endif %}"
+               id="start_date" name="start_date" type="date" required
+               value="{{ vals.get('start_date', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="end_date">
+          End date
+          <span class="form-hint">leave blank for current job</span>
+        </label>
+        <input class="form-input {% if 'End date' in errors|join %}input-error{% endif %}"
+               id="end_date" name="end_date" type="date"
+               value="{{ vals.get('end_date', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="supervisor">Supervisor</label>
+        <input class="form-input" id="supervisor" name="supervisor" type="text" maxlength="128"
+               value="{{ vals.get('supervisor', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="hourly_rate">Hourly rate ($)</label>
+        <input class="form-input" id="hourly_rate" name="hourly_rate" type="text" maxlength="12"
+               placeholder="e.g. 14.50"
+               value="{{ vals.get('hourly_rate', '') }}">
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+    <button type="submit" class="btn btn-primary">Add Job</button>
+    <a href="/students/{{ student.id }}" class="btn btn-secondary">Cancel</a>
+  </div>
+
+</form>
+{% endblock %}

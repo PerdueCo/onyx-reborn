@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{% if employer %}Edit {{ employer.name }} — Onyx Reborn{% else %}Add Employer — Onyx Reborn{% endif %}{% endblock %}
+{% set active_page = "employment" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    {% if employer %}
+      <h1>Edit Employer</h1>
+      <p class="page-subtitle">{{ employer.name }}</p>
+    {% else %}
+      <h1>Add Employer</h1>
+    {% endif %}
+  </div>
+  <div>
+    <a href="/employment/employers" class="btn btn-secondary">Cancel</a>
+  </div>
+</div>
+
+{% if errors %}
+<div class="alert alert-error" role="alert">
+  <ul style="margin:0;padding-left:1.25rem">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+{# Helper macro: edit shows model value, error re-show uses vals #}
+{% macro fval(field, default="") %}
+  {%- if vals and vals[field] is defined and vals[field] != "" -%}
+    {{ vals[field] }}
+  {%- elif employer -%}
+    {{ employer | attr(field) if employer | attr(field) is not none else default }}
+  {%- else -%}
+    {{ default }}
+  {%- endif -%}
+{% endmacro %}
+
+<form method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="card-title">Employer Details</span></div>
+    <div class="form-grid">
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="name">Employer name <span class="required">*</span></label>
+        <input class="form-input {% if 'name' in errors|join|lower %}input-error{% endif %}"
+               id="name" name="name" type="text" maxlength="128" required
+               value="{{ fval('name') }}">
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label" for="address">Street address</label>
+        <input class="form-input" id="address" name="address" type="text" maxlength="256"
+               value="{{ fval('address') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="city">City</label>
+        <input class="form-input" id="city" name="city" type="text" maxlength="64"
+               value="{{ fval('city') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="state">State</label>
+        <select class="form-select" id="state" name="state">
+          <option value="">— Select —</option>
+          {% for abbr in us_states %}
+          <option value="{{ abbr }}" {% if fval('state') == abbr %}selected{% endif %}>{{ abbr }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="zip">ZIP code</label>
+        <input class="form-input" id="zip" name="zip" type="text" maxlength="16"
+               value="{{ fval('zip') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone</label>
+        <input class="form-input" id="phone" name="phone" type="tel" maxlength="32"
+               value="{{ fval('phone') }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="company_type">Company type</label>
+        <input class="form-input" id="company_type" name="company_type" type="text" maxlength="64"
+               value="{{ fval('company_type') }}">
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+    <button type="submit" class="btn btn-primary">
+      {% if employer %}Save Changes{% else %}Add Employer{% endif %}
+    </button>
+    <a href="/employment/employers" class="btn btn-secondary">Cancel</a>
+  </div>
+
+</form>
+{% endblock %}

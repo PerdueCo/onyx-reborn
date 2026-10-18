@@ -43,8 +43,8 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 ## Day 3 — Wed Oct 15: Employment + employers + dashboard real numbers (~4 hrs)
 
-- [ ] [Code] Employers list + add + edit (name, address, city, state, phone — D-06 bug fixed)
-- [ ] [Code] Add job / end job on student detail page; start/end date validation; `job_type` dropdown
+- [x] [Code] Employers list + add + edit (name, address, city, state, phone — D-06 bug fixed)
+- [x] [Code] Add job / end job on student detail page; start/end date validation; `job_type` dropdown
 - [ ] [Code] `app/services/kpis.py` — real counts: total students, active jobs, employers, students seeking work
 - [ ] [Code] Dashboard Overview: 4 KPI cards wired to real DB counts; recent activity feed (last 10 audit events); no Chart.js (cut — too slow to build well)
 - [ ] Tests: add employer, add job, end job, overlapping-date guard

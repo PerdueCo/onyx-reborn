@@ -12,6 +12,7 @@ from app.routers import public as public_router
 from app.routers import auth as auth_router
 from app.routers import dashboard as dashboard_router
 from app.routers import students as students_router
+from app.routers import employment as employment_router
 
 settings = get_settings()
 
@@ -41,6 +42,7 @@ app.include_router(public_router.router)
 app.include_router(auth_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(students_router.router)
+app.include_router(employment_router.router)
 
 # ---------------------------------------------------------------------------
 # Jinja2 globals — registered on the single shared Environment

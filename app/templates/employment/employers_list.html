@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Employers — Onyx Reborn{% endblock %}
+{% set active_page = "employment" %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Employers</h1>
+    <p class="page-subtitle">Manage employer / work-site records.</p>
+  </div>
+  <div>
+    <a href="/employment/employers/new" class="btn btn-primary">
+      <svg class="btn-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+      </svg>
+      Add Employer
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  {% if employers %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Phone</th>
+        <th>Type</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in employers %}
+      <tr>
+        <td><strong>{{ e.name }}</strong></td>
+        <td>{{ e.city or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.state or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.phone or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.company_type or '<span class="text-muted">—</span>' }}</td>
+        <td style="text-align:right">
+          <a href="/employment/employers/{{ e.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <p>No employers yet — <a href="/employment/employers/new">add one</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
