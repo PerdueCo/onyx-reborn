@@ -834,4 +834,43 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** `22a0551`
 - **Next item:** Day 4 — Dockerfile; `.env.example` complete; README.md.
 
+
+### 2026-10-17 — Step 10: Render deploy (Dockerfile + render.yaml + DEPLOY.md)
+
+- **Items finished:**
+  1. **`Dockerfile`** — Rewrote CMD as a shell form: runs `scripts/reset_db.py` when
+     `DEMO_MODE=true`, then starts `uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}`.
+     `PORT` is injected by Render at runtime. Base image is `python:3.12-slim`.
+  2. **`.dockerignore`** — Excludes `.env`, `.env.*`, `onyx.db` + WAL/SHM files, `.venv`,
+     `__pycache__`, `*.py[cod]`, `.pytest_cache`, `.git`, editor dirs. Secrets and local
+     state never land in the image.
+  3. **`app/main.py`** — Enhanced startup guard: after `_require` confirms `MFA_ENC_KEY`
+     is non-empty, a `try: Fernet(key.encode())` block validates it is a genuine 32-byte
+     URL-safe-base64 Fernet key. On failure `sys.exit()` prints a clear message with the
+     generate command before the process dies.
+  4. **`render.yaml`** — Blueprint with one free web service (`runtime: docker`,
+     `healthCheckPath: /`). Env vars: `DEMO_MODE=true`; `SESSION_SECRET` with
+     `generateValue: true`; `MFA_ENC_KEY` with `sync: false` (operator pastes key).
+  5. **`docs/DEPLOY.md`** — Numbered click-by-click guide: sign up → New > Blueprint →
+     connect repo → generate key locally → paste in dashboard → watch logs → visit URL.
+     Includes demo login table, TOTP pyotp command, and free-plan cold-start warning.
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Step 10 (resume). Check git status first and keep any correct work on disk. Then:
+    1. app/main.py: fail with a clear message if MFA_ENC_KEY missing or not a valid Fernet
+    key. 2. Dockerfile: reset_db on DEMO_MODE=true, uvicorn on PORT. 3. render.yaml: free
+    web service, healthCheckPath /, env vars. 4. docs/DEPLOY.md: click-by-click steps.
+    Run pytest, commit, push."
+- **What Bob did well:** Detected existing Dockerfile + .dockerignore from previous
+  interrupted session via `git status` before touching any files; validated all five
+  deliverables in a single commit; 165 tests passed first run.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **165 passed**, 0 failed.
+- **Commit ID:** `ec05a43`
+- **Next item:** Deploy to Render (live URL + demo accounts work); then README.md.
+
+---
+
 ---
