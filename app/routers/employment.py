@@ -71,7 +71,7 @@ async def employment_overview(
         for job, student, employer in raw_jobs
     ]
 
-    employers = db.query(Employer).order_by(Employer.name).all()
+    employers = db.query(Employer).filter(Employer.active == True).order_by(Employer.name).all()  # noqa: E712
 
     active_tab = tab if tab in ("jobs", "employers") else "jobs"
 
@@ -163,7 +163,7 @@ async def employers_list(
     current_user: UserAccount = Depends(_manage_dep),
     db: Session = Depends(get_db),
 ):
-    employers = db.query(Employer).order_by(Employer.name).all()
+    employers = db.query(Employer).filter(Employer.active == True).order_by(Employer.name).all()  # noqa: E712
     return templates.TemplateResponse(
         request,
         "employment/employers_list.html",

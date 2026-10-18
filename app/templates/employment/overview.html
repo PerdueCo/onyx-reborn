@@ -94,10 +94,10 @@
       {% for e in employers %}
       <tr>
         <td><strong>{{ e.name }}</strong></td>
-        <td>{{ e.city or '<span class="text-muted">—</span>' }}</td>
-        <td>{{ e.state or '<span class="text-muted">—</span>' }}</td>
-        <td>{{ e.phone or '<span class="text-muted">—</span>' }}</td>
-        <td>{{ e.company_type or '<span class="text-muted">—</span>' }}</td>
+        <td>{{ e.city or '' }}{% if not e.city %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>{{ e.state or '' }}{% if not e.state %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>{{ e.phone or '' }}{% if not e.phone %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>{{ e.company_type or '' }}{% if not e.company_type %}<span class="text-muted">—</span>{% endif %}</td>
         <td style="text-align:right">
           <a href="/employment/employers/{{ e.id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
         </td>

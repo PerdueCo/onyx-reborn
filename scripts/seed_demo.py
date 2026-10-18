@@ -3,8 +3,8 @@
 Rules
 -----
 - Never touches records where legacy_source=True.
-- Idempotent: guarded by a DEMO_SEED_MARKER employer (legacy_code='DEMO_SEED').
-  If that employer already exists, the whole seed is skipped.
+- Idempotent: skips if any student with legacy_source=False and a STU-DEMO
+  student_number prefix already exists in the DB.
 - ~250 students spread across the 5 programs.
 - ~12 employers with realistic GA company names (includes names from dashboard mockup).
 - ~170 jobs with realistic start/end dates.
@@ -185,22 +185,19 @@ def _random_grad(enrolled: date) -> date | None:
 # Main seeder
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Idempotency sentinel: the first demo employer's legacy_code
+# ---------------------------------------------------------------------------
+_DEMO_SENTINEL = "DEMO001"
+
+
 def seed(session: Session) -> None:
     """Insert demo employers, students, and jobs.  Skips if already seeded."""
 
-    # Idempotency guard
-    if session.query(Employer).filter_by(legacy_code="DEMO_SEED").first():
+    # Idempotency guard — skip if any demo employer already present
+    if session.query(Employer).filter_by(legacy_code=_DEMO_SENTINEL).first():
         print("Demo seed already present — skipping.")
         return
-
-    # Marker employer (not used for jobs)
-    marker = Employer(
-        name="[Demo Seed Marker]",
-        legacy_code="DEMO_SEED",
-        active=False,
-    )
-    session.add(marker)
-    session.flush()
 
     # 1. Upsert programs
     PROGRAMS = [
