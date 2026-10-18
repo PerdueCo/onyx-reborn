@@ -44,6 +44,18 @@ def _ctx(current_user: UserAccount, db: Session) -> dict:
     }
 
 
+def _coerce_id(raw: str | None) -> int | None:
+    """Convert a query-string id value to int or None.
+
+    - None or "" (empty string from "All …" option)  → None  (no filter)
+    - A string of digits                              → int
+    - Anything else                                   → None  (ignore garbage)
+    """
+    if not raw:
+        return None
+    return int(raw) if raw.isdigit() else None
+
+
 # ---------------------------------------------------------------------------
 # HTML report page
 # ---------------------------------------------------------------------------
@@ -51,12 +63,14 @@ def _ctx(current_user: UserAccount, db: Session) -> dict:
 @router.get("", response_class=HTMLResponse)
 async def reports_index(
     request: Request,
-    program_id: int | None = Query(default=None),
-    employer_id: int | None = Query(default=None),
+    program_id: str | None = Query(default=None),
+    employer_id: str | None = Query(default=None),
     current_user: UserAccount = Depends(_read_dep),
     db: Session = Depends(get_db),
 ):
-    rows = get_current_employment(db, program_id=program_id, employer_id=employer_id)
+    pid = _coerce_id(program_id)
+    eid = _coerce_id(employer_id)
+    rows = get_current_employment(db, program_id=pid, employer_id=eid)
     programs = get_programs(db)
     employers = get_employers(db)
     return templates.TemplateResponse(
@@ -67,8 +81,8 @@ async def reports_index(
             "rows": rows,
             "programs": programs,
             "employers": employers,
-            "selected_program_id": program_id,
-            "selected_employer_id": employer_id,
+            "selected_program_id": pid,
+            "selected_employer_id": eid,
             "active_page": "reports",
         },
     )
@@ -81,12 +95,14 @@ async def reports_index(
 @router.get("/current-employment/export.csv")
 async def export_csv(
     request: Request,
-    program_id: int | None = Query(default=None),
-    employer_id: int | None = Query(default=None),
+    program_id: str | None = Query(default=None),
+    employer_id: str | None = Query(default=None),
     current_user: UserAccount = Depends(_read_dep),
     db: Session = Depends(get_db),
 ):
-    rows = get_current_employment(db, program_id=program_id, employer_id=employer_id)
+    pid = _coerce_id(program_id)
+    eid = _coerce_id(employer_id)
+    rows = get_current_employment(db, program_id=pid, employer_id=eid)
 
     buf = io.StringIO()
     writer = csv.writer(buf)

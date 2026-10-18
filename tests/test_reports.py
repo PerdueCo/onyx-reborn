@@ -347,3 +347,62 @@ def test_csv_export_requires_auth(client):
     r = client.get("/reports/current-employment/export.csv", follow_redirects=False)
     assert r.status_code == 303
     assert "/login" in r.headers.get("location", "")
+
+
+# ---------------------------------------------------------------------------
+# Empty-string / mixed filter tests  (regression: FastAPI 422 on program_id="")
+# ---------------------------------------------------------------------------
+
+def test_reports_empty_string_both_params_returns_all(staff_client: TestClient):
+    """?program_id=&employer_id= (the form's 'All …' selection) → 200, all 2 current rows."""
+    r = staff_client.get("/reports?program_id=&employer_id=")
+    assert r.status_code == 200, r.text[:400]
+    count = _html_row_count(r.text)
+    assert count == 2, f"Expected 2 rows with empty filters, got {count}"
+
+
+def test_reports_empty_program_id_with_employer_set(staff_client: TestClient, rep_db: Session):
+    """program_id= (blank) + employer_id set → filter by employer only."""
+    emp_a = rep_db.query(Employer).filter_by(name="Corp A").first()
+    r = staff_client.get(f"/reports?program_id=&employer_id={emp_a.id}")
+    assert r.status_code == 200, r.text[:400]
+    count = _html_row_count(r.text)
+    assert count == 1, f"Expected 1 row (Corp A only), got {count}"
+    assert "Anderson" in r.text
+    assert "Brown" not in r.text
+
+
+def test_reports_empty_employer_id_with_program_set(staff_client: TestClient, rep_db: Session):
+    """employer_id= (blank) + program_id set → filter by program only."""
+    prog_b = rep_db.query(Program).filter_by(code="BETA").first()
+    r = staff_client.get(f"/reports?program_id={prog_b.id}&employer_id=")
+    assert r.status_code == 200, r.text[:400]
+    count = _html_row_count(r.text)
+    assert count == 1, f"Expected 1 row (Beta only), got {count}"
+    assert "Brown" in r.text
+    assert "Anderson" not in r.text
+
+
+def test_csv_export_empty_string_both_params(staff_client: TestClient):
+    """CSV: ?program_id=&employer_id= → 200, 2 data rows (all current jobs)."""
+    r = staff_client.get("/reports/current-employment/export.csv?program_id=&employer_id=")
+    assert r.status_code == 200, r.text[:400]
+    reader = csv.reader(io.StringIO(r.text))
+    next(reader)  # skip header
+    rows = list(reader)
+    assert len(rows) == 2, f"Expected 2 CSV data rows, got {len(rows)}"
+
+
+def test_csv_export_empty_program_id_with_employer_set(
+    staff_client: TestClient, rep_db: Session
+):
+    """CSV: program_id= blank + employer_id set → 1 data row."""
+    emp_b = rep_db.query(Employer).filter_by(name="Corp B").first()
+    r = staff_client.get(
+        f"/reports/current-employment/export.csv?program_id=&employer_id={emp_b.id}"
+    )
+    assert r.status_code == 200, r.text[:400]
+    reader = csv.reader(io.StringIO(r.text))
+    next(reader)
+    rows = list(reader)
+    assert len(rows) == 1, f"Expected 1 CSV row for Corp B, got {len(rows)}"
