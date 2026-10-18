@@ -529,3 +529,69 @@ entries reconstructed from git history — commit IDs are exact.)*
 - **Commit ID:** (pending push)
 - **Next item:** Day 3 remainder — `app/services/kpis.py` real counts; Dashboard KPI cards
   wired to DB; recent activity feed (last 10 audit events).
+### 2026-10-16 — Step 7: Dashboard real KPIs + mobile responsive layout
+
+- **Items finished:**
+  1. **`app/services/kpis.py`** — real SQLAlchemy queries:
+     - `get_kpis()` → total_students (active), employed_count (distinct students with ≥1
+       current job), employed_pct, current_jobs (row count), avg_hourly_rate (formatted
+       `$X.XX` or `—`), seeking_count; all counts use `date.today()` as "as-of"
+     - `get_recent_activity(limit=10)` → last N audit events with actor display_name
+     - `get_security_events(limit=10)` → filtered to `sign_in_failed / access_denied /
+       account_locked` (admin-only)
+  2. **`app/routers/dashboard.py`** — wires all three service calls; passes `is_admin`
+     flag (presence of `accounts.manage` perm); security_events only fetched for admin
+  3. **`app/templates/dashboard/index.html`** — rebuilt:
+     - 4 KPI cards with real template variables (Active Students, Currently Employed with
+       %, Current Jobs with avg rate sub-line, Seeking Employment)
+     - Recent activity feed (last 10 audit events) — both roles
+     - Two-column dash-grid layout (activity left, quick links right)
+     - Admin-only row: Data Safety card (SSN=None, MFA, audit, session, bcrypt) +
+       Security events card with amber "Admin only" badge
+     - No review queue, no period picker, no print, no monthly trend
+  4. **`app/templates/base.html`** — added mobile-topbar strip (navy, 52 px, hamburger
+     button + wordmark + sign-out icon), sidebar-overlay div, inline JS drawer toggle
+     (<20 lines vanilla JS; no deps); desktop behaviour unchanged
+  5. **`app/static/css/onyx.css`** — appended:
+     - `.dash-grid` 2-col grid, `.activity-list / .activity-item / .activity-dot-*`,
+       `.quick-links / .quick-link-btn`, `.card-title-icon`, `.kpi-rate`
+     - `.mobile-topbar` / `.sidebar-overlay` hidden on desktop; `.mobile-menu-btn` /
+       `.mobile-signout-btn` 44 px touch targets
+     - `@media (max-width: 639px)` breakpoint: sidebar slides left, right-col
+       margin-left:0, desktop topbar hidden, main-content padding 16px, kpi-row 2×2
+       grid, dash-grid 1-col, form-row-2/3 + form-grid collapse to 1-col, btn
+       min-height:44px, auth-card full-width, detail-grid stacks
+  6. **`tests/test_dashboard.py`** — 16 tests:
+     - `test_staff_dashboard_loads` — 200
+     - `test_staff_sees_kpi_cards` — all 4 labels present
+     - `test_staff_sees_recent_activity` — section present
+     - `test_staff_no_data_safety` — admin-only card absent for staff
+     - `test_staff_no_security_events` — admin-only card absent for staff
+     - `test_admin_dashboard_loads` — 200
+     - `test_admin_sees_kpi_cards` — all 4 labels present
+     - `test_admin_sees_data_safety` — section present
+     - `test_admin_sees_security_events` — section present
+     - `test_admin_no_review_queue` — review queue absent (D-27 cut)
+     - `test_kpi_total_students` — "2" appears (fixture has 2 active)
+     - `test_kpi_employed_count` — "50%" appears (1/2 students employed)
+     - `test_kpi_seeking_count` — "Seeking Employment" label present
+     - `test_kpi_avg_rate_shown` — "$15.00" appears (fixture job rate)
+     - `test_kpi_current_jobs` — "Current Jobs" label present
+     - `test_dashboard_requires_auth` — unauthenticated → 303 to /login
+- **Bob modes used:** Agent mode throughout.
+- **Key prompts:**
+  - "Run-sheet step 7: rebuild /dashboard to match mockups; real queries per
+    dashboard-spec.md rules; admin also sees Data safety + security events; staff
+    does not; no review queue, period picker, print, or monthly trend; also make every
+    signed-in page work at 390px wide."
+- **What Bob did well:** Read all required docs in order before writing a line; kept the
+  responsive CSS additive (no existing selectors changed); single `@media` block covers
+  all authenticated pages (login, MFA, students, forms, detail); fixture numbers chosen
+  so 50% test is deterministic; 16 new tests green first run; full 89-test suite green.
+- **Where I corrected it:** No corrections from Clarence.
+- **Problems + fixes:** None — 89 passed on first pytest run.
+- **Decisions changed:** None.
+- **Tests:** `pytest -q` → **89 passed**, 0 failed (16 new dashboard tests + 73 existing).
+- **Commit ID:** `bb66baf`
+- **Next item:** Day 4 — Employment history report + CSV export; Dockerfile; README.
+

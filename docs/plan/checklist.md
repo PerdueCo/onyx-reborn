@@ -45,9 +45,9 @@ Scope cuts recorded in `decisions.md` D-27 (Oct 11 checkpoint).
 
 - [x] [Code] Employers list + add + edit (name, address, city, state, phone — D-06 bug fixed)
 - [x] [Code] Add job / end job on student detail page; start/end date validation; `job_type` dropdown
-- [ ] [Code] `app/services/kpis.py` — real counts: total students, active jobs, employers, students seeking work
-- [ ] [Code] Dashboard Overview: 4 KPI cards wired to real DB counts; recent activity feed (last 10 audit events); no Chart.js (cut — too slow to build well)
-- [ ] Tests: add employer, add job, end job, overlapping-date guard
+- [x] [Code] `app/services/kpis.py` — real counts: total students, active jobs, employers, students seeking work
+- [x] [Code] Dashboard Overview: 4 KPI cards wired to real DB counts; recent activity feed (last 10 audit events); mobile responsive (390px); admin-only Data Safety + Security events; no chart, no review queue, no period picker (commit `bb66baf`)
+- [x] Tests: dashboard staff vs admin visibility, KPI numbers match fixture (16 new tests)
 
 ---
 
